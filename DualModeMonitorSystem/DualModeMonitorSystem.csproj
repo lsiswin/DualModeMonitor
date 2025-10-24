@@ -12,6 +12,7 @@
     <Folder Include="Helpers\" />
     <Folder Include="MesService\" />
     <Folder Include="Services\" />
+    <Folder Include="static\" />
   </ItemGroup>
 
   <ItemGroup>
