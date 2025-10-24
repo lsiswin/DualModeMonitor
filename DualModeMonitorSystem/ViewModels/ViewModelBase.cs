@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace DualModeMonitorSystem.ViewModels
 {
-    public class ViewModelBase
+    public class ViewModelBase : BindableBase
     {
-
     }
 }
