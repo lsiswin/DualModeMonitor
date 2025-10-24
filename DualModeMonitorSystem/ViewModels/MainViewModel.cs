@@ -15,6 +15,10 @@ namespace DualModeMonitorSystem.ViewModels
         public DelegateCommand<MenuItem> NavigateCommand => new DelegateCommand<MenuItem>(NavigateTo);
         public List<MenuItem> MenuList { get; }
 
+        public MainViewModel()
+        {
+            
+        }
         public MainViewModel(IRegionManager regionManager)
         {
             MenuList = new List<MenuItem>

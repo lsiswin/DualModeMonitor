@@ -5,15 +5,265 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:DualModeMonitorSystem.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:vm="clr-namespace:DualModeMonitorSystem.ViewModels"
+    d:DataContext="{d:DesignInstance vm:DashboardViewModel,
+                                     IsDesignTimeCreatable=True}"
+    d:DesignHeight="950"
+    d:DesignWidth="1000"
     mc:Ignorable="d">
-    <Grid>
-        <TextBlock
-            Margin="25,10"
-            HorizontalAlignment="Center"
-            FontSize="24"
-            Style="{StaticResource NavigationFont}"
-            Text="仪表盘" />
+    <Grid Background="#1E222B">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ItemsControl ItemsSource="{Binding StatisticsResult}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="4" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <md:Card Margin="10" Background="#272E3B">
+                        <DockPanel>
+                            <StackPanel Margin="10">
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="ExtraLight"
+                                    Foreground="#C0C0C0"
+                                    Text="{Binding Title}" />
+                                <TextBlock
+                                    Margin="0,10"
+                                    FontSize="23"
+                                    FontWeight="Bold"
+                                    Foreground="White"
+                                    Text="{Binding Value}" />
+                            </StackPanel>
+                            <md:PackIcon
+                                Width="50"
+                                Height="50"
+                                Margin="0,20,10,0"
+                                HorizontalAlignment="Right"
+                                Foreground="BlueViolet"
+                                Kind="{Binding Icon}" />
+                        </DockPanel>
+                    </md:Card>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border
+                Grid.Row="0"
+                Grid.Column="0"
+                Margin="10"
+                Padding="5"
+                Background="#272E3B"
+                CornerRadius="5">
+                <StackPanel Margin="10">
+                    <DockPanel>
+                        <TextBlock
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Text="实时监控数据" />
+                        <Border
+                            Padding="5"
+                            HorizontalAlignment="Right"
+                            Background="#374151"
+                            CornerRadius="3">
+                            <TextBlock
+                                FontSize="10"
+                                Foreground="#2063DF"
+                                Text="最后更新: 10:24:35" />
+                        </Border>
+                    </DockPanel>
+                    <TextBlock
+                        Margin="0,20,0,5"
+                        FontSize="13"
+                        Foreground="#C0C0C0"
+                        Text="选择设备" />
+                    <Border Background="#1E222B">
+                        <ComboBox
+                            Padding="6"
+                            md:HintAssist.Hint="设备#1 (车间A-1区)"
+                            Foreground="White" />
+                    </Border>
+                    <StackPanel Margin="0,10">
+                        <!--  温度监控卡片  -->
+                        <md:Card
+                            Margin="0,5"
+                            Padding="12"
+                            Background="#1E222B"
+                            Foreground="#C0C0C0">
+                            <StackPanel>
+                                <Grid HorizontalAlignment="Stretch">
+                                    <TextBlock Style="{DynamicResource mdBodyTextBlock}" Text="当前温度" />
+                                    <md:Card
+                                        HorizontalAlignment="Right"
+                                        Background="{DynamicResource MaterialDesignColor.Blue400}"
+                                        Content="正常" />
+                                </Grid>
+                                <Grid Margin="0,10,0,0" HorizontalAlignment="Stretch">
+                                    <TextBlock
+                                        Margin="0,0,0,10"
+                                        FontSize="25"
+                                        FontWeight="DemiBold"
+                                        Foreground="White"
+                                        Style="{DynamicResource MaterialDesignHeadlineTextBlock}"
+                                        Text="23.5 °C" />
+                                    <TextBlock
+                                        HorizontalAlignment="Right"
+                                        Foreground="Green"
+                                        Style="{DynamicResource MaterialDesignBody2TextBlock}"
+                                        Text="0.2°C" />
+                                </Grid>
+
+                                <ProgressBar
+                                    Foreground="{DynamicResource MaterialDesignColor.Blue400}"
+                                    Style="{DynamicResource MaterialDesignLinearProgressBar}"
+                                    Value="45" />
+                                <Grid HorizontalAlignment="Stretch">
+                                    <TextBlock
+                                        HorizontalAlignment="Left"
+                                        Style="{DynamicResource MaterialDesignCaptionTextBlock}"
+                                        Text="0°C" />
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        Style="{DynamicResource MaterialDesignCaptionTextBlock}"
+                                        Text="阈值: 30°C" />
+                                    <TextBlock
+                                        HorizontalAlignment="Right"
+                                        Style="{DynamicResource MaterialDesignCaptionTextBlock}"
+                                        Text="50°C" />
+                                </Grid>
+                            </StackPanel>
+                        </md:Card>
+                        <!--  湿度监控卡片  -->
+                        <md:Card
+                            Margin="0,5"
+                            Padding="12"
+                            Background="#1E222B"
+                            Foreground="#C0C0C0">
+                            <StackPanel>
+                                <Grid HorizontalAlignment="Stretch">
+                                    <TextBlock Style="{DynamicResource mdBodyTextBlock}" Text="当前湿度" />
+                                    <md:Card
+                                        HorizontalAlignment="Right"
+                                        Background="{DynamicResource MaterialDesignColor.Blue400}"
+                                        Content="正常" />
+                                </Grid>
+                                <Grid Margin="0,10,0,0" HorizontalAlignment="Stretch">
+                                    <TextBlock
+                                        Margin="0,0,0,10"
+                                        FontSize="25"
+                                        FontWeight="DemiBold"
+                                        Foreground="White"
+                                        Style="{DynamicResource MaterialDesignHeadlineTextBlock}"
+                                        Text="45.2%" />
+                                    <TextBlock
+                                        HorizontalAlignment="Right"
+                                        Foreground="Green"
+                                        Style="{DynamicResource MaterialDesignBody2TextBlock}"
+                                        Text="1.3%" />
+                                </Grid>
+
+                                <ProgressBar
+                                    Foreground="{DynamicResource MaterialDesignColor.Blue400}"
+                                    Style="{DynamicResource MaterialDesignLinearProgressBar}"
+                                    Value="45" />
+                                <Grid HorizontalAlignment="Stretch">
+                                    <TextBlock
+                                        HorizontalAlignment="Left"
+                                        Style="{DynamicResource MaterialDesignCaptionTextBlock}"
+                                        Text="0%" />
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        Style="{DynamicResource MaterialDesignCaptionTextBlock}"
+                                        Text="阈值: 60%" />
+                                    <TextBlock
+                                        HorizontalAlignment="Right"
+                                        Style="{DynamicResource MaterialDesignCaptionTextBlock}"
+                                        Text="100%" />
+                                </Grid>
+                            </StackPanel>
+                        </md:Card>
+
+                        <!--  设备电压监控卡片  -->
+                        <md:Card
+                            Margin="0,5"
+                            Padding="12"
+                            Background="#1E222B"
+                            Foreground="#C0C0C0">
+                            <StackPanel>
+                                <Grid HorizontalAlignment="Stretch">
+                                    <TextBlock Style="{DynamicResource mdBodyTextBlock}" Text="设备电压" />
+                                    <md:Card
+                                        HorizontalAlignment="Right"
+                                        Background="{DynamicResource MaterialDesignColor.Blue400}"
+                                        Content="正常" />
+                                </Grid>
+                                <Grid Margin="0,10,0,0" HorizontalAlignment="Stretch">
+                                    <TextBlock
+                                        Margin="0,0,0,10"
+                                        FontSize="25"
+                                        FontWeight="DemiBold"
+                                        Foreground="White"
+                                        Style="{DynamicResource MaterialDesignHeadlineTextBlock}"
+                                        Text="5.12v" />
+                                    <TextBlock
+                                        HorizontalAlignment="Right"
+                                        Foreground="Green"
+                                        Style="{DynamicResource MaterialDesignBody2TextBlock}"
+                                        Text="0.00v" />
+                                </Grid>
+
+                                <ProgressBar
+                                    Foreground="{DynamicResource MaterialDesignColor.Blue400}"
+                                    Style="{DynamicResource MaterialDesignLinearProgressBar}"
+                                    Value="45" />
+                                <Grid HorizontalAlignment="Stretch">
+                                    <TextBlock
+                                        HorizontalAlignment="Left"
+                                        Style="{DynamicResource MaterialDesignCaptionTextBlock}"
+                                        Text="4.5v" />
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        Style="{DynamicResource MaterialDesignCaptionTextBlock}"
+                                        Text="正常范围" />
+                                    <TextBlock
+                                        HorizontalAlignment="Right"
+                                        Style="{DynamicResource MaterialDesignCaptionTextBlock}"
+                                        Text="5.5v" />
+                                </Grid>
+                            </StackPanel>
+                        </md:Card>
+                        <UniformGrid Margin="0,14,0,0" Columns="2">
+                            <Button
+                                Margin="0,0,5,0"
+                                md:ButtonAssist.CornerRadius="6"
+                                Content="刷新数据" />
+                            <Button
+                                Margin="5,0,0,0"
+                                md:ButtonAssist.CornerRadius="6"
+                                Background="#343E4E"
+                                BorderBrush="DarkGray"
+                                Content="历史数据"
+                                Foreground="White"
+                                Style="{DynamicResource MaterialDesignOutlinedDarkButton}" />
+                        </UniformGrid>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>
