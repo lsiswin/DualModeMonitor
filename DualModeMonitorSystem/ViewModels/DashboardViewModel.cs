@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using DualModeMonitorSystem.Models;
 
 namespace DualModeMonitorSystem.ViewModels
@@ -23,6 +25,7 @@ namespace DualModeMonitorSystem.ViewModels
                 new Statistica { Title = "今日警告", Value = 8760 ,Icon = "Alert"},
                 new Statistica { Title = "MES上传成功率", Value = 45 ,Icon = "ProgressUpload"}
             };
+            
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)

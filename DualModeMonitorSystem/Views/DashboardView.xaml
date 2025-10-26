@@ -264,6 +264,51 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
+            <Border
+                Grid.Row="0"
+                Grid.Column="1"
+                Grid.ColumnSpan="2"
+                Margin="10"
+                Padding="5"
+                Background="#272E3B"
+                CornerRadius="5">
+                <StackPanel>
+                    <DockPanel Margin="10">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Text="温湿度趋势图" />
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <Button
+                                Margin="10,0,0,0"
+                                md:ButtonAssist.CornerRadius="15"
+                                Background="#165DFF"
+                                Content="24小时"
+                                Foreground="White"
+                                Style="{DynamicResource MaterialDesignOutlinedDarkButton}" />
+                            <Button
+                                Margin="10,0,0,0"
+                                md:ButtonAssist.CornerRadius="15"
+                                Background="#165DFF"
+                                Content="7天"
+                                Foreground="White"
+                                Style="{DynamicResource MaterialDesignOutlinedDarkButton}" />
+                            <Button
+                                Margin="10,0,0,0"
+                                md:ButtonAssist.CornerRadius="15"
+                                Background="#165DFF"
+                                Content="30天"
+                                Foreground="White"
+                                Style="{DynamicResource MaterialDesignOutlinedDarkButton}" />
+                        </StackPanel>
+                    </DockPanel>
+                    <!--  温湿度趋势图占位符  -->
+                    <md:Card Margin="10" Padding="10" />
+                </StackPanel>
+
+            </Border>
         </Grid>
     </Grid>
 </UserControl>
