@@ -10,8 +10,8 @@
     xmlns:prism="http://prismlibrary.com/"
     xmlns:vm="clr-namespace:DualModeMonitorSystem.ViewModels"
     Title="MainWindow"
-    Width="1200"
-    Height="750"
+    Width="1920"
+    Height="1080"
     d:DataContext="{d:DesignInstance vm:MainViewModel,
                                      IsDesignTimeCreatable=True}"
     mc:Ignorable="d">

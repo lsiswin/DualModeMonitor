@@ -6,6 +6,14 @@
         <Setter Property="FontFamily" Value="Inter, system-ui, sans-serif" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
+    <!--  仪表盘列表通用样式  -->
+    <DataTemplate x:Key="CenteredCellTemplate">
+        <TextBlock
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="White"
+            Text="{Binding}" />
+    </DataTemplate>
     <!--  状态指示灯样式  -->
     <Style x:Key="StatusIndicatorStyle" TargetType="Border">
         <!--  基础样式：圆形  -->

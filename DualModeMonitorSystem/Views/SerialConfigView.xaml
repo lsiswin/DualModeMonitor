@@ -5,15 +5,102 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:DualModeMonitorSystem.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
+
     <Grid>
-        <TextBlock
-            Margin="25,10"
-            HorizontalAlignment="Center"
-            FontSize="24"
-            Style="{StaticResource NavigationFont}"
-            Text="串口配置" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Row="0" Grid.Column="0">
+            <TextBlock
+                Margin="10"
+                FontSize="25"
+                FontWeight="DemiBold"
+                Foreground="White"
+                Text="协议配置" />
+            <TextBlock
+                Margin="10,0"
+                FontSize="15"
+                Foreground="White"
+                Text="配置串口通信和Modbus协议参数" />
+        </StackPanel>
+        <md:Card Grid.Row="1" Grid.Column="0">
+            <StackPanel>
+                <DockPanel Margin="10">
+                    <md:PackIcon Width="30" Height="30" />
+                    <StackPanel>
+                        <TextBlock Text="串口设置" />
+                        <TextBlock Text="RS485/RS232通信参数" />
+                    </StackPanel>
+                    <ToggleButton
+                        HorizontalAlignment="Right"
+                        IsChecked="True"
+                        Style="{StaticResource MaterialDesignSwitchDarkToggleButton}"
+                        ToolTip="MaterialDesignSwitchDarkToggleButton" />
+                </DockPanel>
+                <StackPanel Margin="10,0">
+                    <StackPanel Margin="0,5" Orientation="Horizontal">
+                        <md:PackIcon Margin="0,5" />
+                        <TextBlock Margin="0,5" Text="串口端口" />
+                    </StackPanel>
+                    <ComboBox Height="35" Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                        <ComboBoxItem Content="COM1" />
+                        <ComboBoxItem Content="COM2" />
+                    </ComboBox>
+                </StackPanel>
+                <StackPanel Margin="10,0">
+                    <StackPanel Margin="0,5" Orientation="Horizontal">
+                        <md:PackIcon Margin="0,5" />
+                        <TextBlock Margin="0,5" Text="波特率" />
+                    </StackPanel>
+                    <ComboBox Height="35" Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                        <ComboBoxItem Content="9600" />
+                        <ComboBoxItem Content="19200" />
+                    </ComboBox>
+                </StackPanel>
+                <UniformGrid Columns="3">
+                    <StackPanel Margin="10,0">
+                        <TextBlock Margin="0,5" Text="数据位" />
+                        <ComboBox Height="35" Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                            <ComboBoxItem Content="5" />
+                            <ComboBoxItem Content="6" />
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Margin="10,0">
+                        <TextBlock Margin="0,5" Text="停止位" />
+                        <ComboBox Height="35" Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                            <ComboBoxItem Content="1" />
+                            <ComboBoxItem Content="2" />
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Margin="10,0">
+                        <TextBlock Margin="0,5" Text="校验位" />
+                        <ComboBox Height="35" Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                            <ComboBoxItem Content="None" />
+                            <ComboBoxItem Content="Odd" />
+                        </ComboBox>
+                    </StackPanel>
+                </UniformGrid>
+                <StackPanel Margin="10,0">
+                    <StackPanel Margin="0,5" Orientation="Horizontal">
+                        <md:PackIcon Margin="0,5" />
+                        <TextBlock Margin="0,5" Text="读取超时 (ms)" />
+                    </StackPanel>
+                    <md:NumericUpDown
+                        Height="35"
+                        Padding="10"
+                        Style="{StaticResource MaterialDesignOutlinedNumericUpDown}" />
+                </StackPanel>
+            </StackPanel>
+        </md:Card>
     </Grid>
 </UserControl>
