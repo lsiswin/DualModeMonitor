@@ -18,7 +18,7 @@
         <convert:AlertLevelToColorConverter x:Key="AlertLevelToColorConverter" />
         <convert:AlertStatusToColorConverter x:Key="AlertStatusToColorConverter" />
     </UserControl.Resources>
-    <ScrollViewer>
+    <ScrollViewer VerticalScrollBarVisibility="Hidden">
 
         <Grid Background="#1E222B">
 
@@ -408,7 +408,7 @@
                                         <GridViewColumn Header="状态" HeaderTemplate="{StaticResource CenteredCellTemplate}">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                                    <StackPanel Orientation="Horizontal">
                                                         <Border
                                                             Margin="0,0,10,0"
                                                             Style="{StaticResource StatusIndicatorStyle}"
@@ -491,7 +491,7 @@
                         <ScrollViewer
                             Grid.Row="1"
                             Padding="0"
-                            VerticalScrollBarVisibility="Auto">
+                            VerticalScrollBarVisibility="Hidden">
                             <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding RecentAlerts}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>

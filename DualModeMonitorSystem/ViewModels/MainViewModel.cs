@@ -13,7 +13,14 @@ namespace DualModeMonitorSystem.ViewModels
         private readonly IRegionManager regionManager;
 
         public DelegateCommand<MenuItem> NavigateCommand => new DelegateCommand<MenuItem>(NavigateTo);
-        public List<MenuItem> MenuList { get; }
+        public List<MenuItem> MenuList { get; } = new List<MenuItem>
+            {
+                new MenuItem { Title = "仪表盘", ViewName = "DashboardView" },
+                new MenuItem { Title = "系统设置", ViewName = "SettingsView" },
+                new MenuItem { Title = "协议配置", ViewName = "SerialConfigView" },
+                new MenuItem { Title = "历史数据", ViewName = "HistoryDataView" },
+                new MenuItem{Title="实时监控",ViewName="RealTimeMonitorView" }
+            };
 
         public MainViewModel()
         {
@@ -25,7 +32,7 @@ namespace DualModeMonitorSystem.ViewModels
             {
                 new MenuItem { Title = "仪表盘", ViewName = "DashboardView" },
                 new MenuItem { Title = "系统设置", ViewName = "SettingsView" },
-                new MenuItem { Title = "串口配置", ViewName = "SerialConfigView" },
+                new MenuItem { Title = "协议配置", ViewName = "SerialConfigView" },
                 new MenuItem { Title = "历史数据", ViewName = "HistoryDataView" },
                 new MenuItem{Title="实时监控",ViewName="RealTimeMonitorView" }
             };

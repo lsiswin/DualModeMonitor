@@ -23,39 +23,276 @@
         <Border
             Background="#272E3B"
             BorderBrush="#374151"
-            BorderThickness="1">
-            <DockPanel>
-                <TextBlock
-                    Margin="25,10"
-                    FontSize="30 "
-                    Style="{StaticResource NavigationFont}"
-                    Text="工业温湿度监控系统" />
-                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                    <TextBlock Style="{StaticResource NavigationFont}" Text="运行模式:" />
-                    <ToggleButton
-                        Margin="5,10,10,10"
-                        IsChecked="True"
-                        Style="{StaticResource MaterialDesignSwitchSecondaryToggleButton}" />
+            BorderThickness="0,0,0,1"
+            CornerRadius="0">
 
+            <DockPanel Height="70" LastChildFill="True">
 
-                    <TextBlock Style="{StaticResource NavigationFont}" Text="Mes集成模式" />
+                <!--  系统标题（左侧）  -->
+                <StackPanel
+                    Margin="25,0"
+                    VerticalAlignment="Center"
+                    DockPanel.Dock="Left"
+                    Orientation="Horizontal">
+
+                    <!--  系统图标  -->
+                    <materialDesign:PackIcon
+                        Width="32"
+                        Height="32"
+                        Margin="0,0,12,0"
+                        Foreground="#165DFF"
+                        Kind="Factory" />
+
+                    <!--  系统标题  -->
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="22"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Text="工业温湿度监控系统" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="#9CA3AF"
+                            Text="Industrial Temperature " />
+                    </StackPanel>
+                </StackPanel>
+
+                <!--  状态信息（右侧）  -->
+                <StackPanel
+                    Margin="0,0,25,0"
+                    VerticalAlignment="Center"
+                    DockPanel.Dock="Right"
+                    Orientation="Horizontal">
+
+                    <!--  运行模式切换  -->
                     <Border
-                        Margin="10,0,2,0"
-                        Style="{StaticResource StatusIndicatorStyle}"
-                        Tag="Normal" />
-                    <TextBlock Style="{StaticResource NavigationFont}" Text="系统正常运行中" />
+                        Margin="0,0,20,0"
+                        Padding="12,8"
+                        Background="#374151"
+                        BorderBrush="#4B5563"
+                        BorderThickness="1"
+                        CornerRadius="6">
 
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <materialDesign:PackIcon
+                                Width="16"
+                                Height="16"
+                                Margin="0,0,8,0"
+                                Foreground="#36CFC9"
+                                Kind="Sync" />
 
+                            <TextBlock
+                                Margin="0,0,8,0"
+                                FontSize="13"
+                                FontWeight="Medium"
+                                Foreground="#E5E7EB"
+                                Text="运行模式" />
+
+                            <ToggleButton
+                                Width="40"
+                                Height="20"
+                                IsChecked="True"
+                                Style="{StaticResource MaterialDesignSwitchSecondaryToggleButton}"
+                                ToolTip="切换运行模式" />
+
+                            <TextBlock
+                                Margin="8,0,0,0"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Foreground="#36CFC9"
+                                Text="MES集成模式" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  系统状态  -->
+                    <Border
+                        Margin="0,0,20,0"
+                        Padding="12,8"
+                        Background="#374151"
+                        BorderBrush="#4B5563"
+                        BorderThickness="1"
+                        CornerRadius="6">
+
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <Border
+                                Width="10"
+                                Height="10"
+                                Margin="0,0,8,0"
+                                Background="#52C41A"
+                                CornerRadius="5">
+                                <Border.Effect>
+                                    <DropShadowEffect
+                                        BlurRadius="8"
+                                        Opacity="0.6"
+                                        ShadowDepth="0"
+                                        Color="#52C41A" />
+                                </Border.Effect>
+                            </Border>
+
+                            <TextBlock
+                                FontSize="13"
+                                FontWeight="Medium"
+                                Foreground="#E5E7EB"
+                                Text="系统正常运行中" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  用户信息  -->
                     <materialDesign:Chip
-                        Margin="10,0"
-                        Command="{Binding}"
-                        Content="James Willock"
+                        Margin="0"
+                        Padding="8,6"
+                        Background="#374151"
+                        BorderBrush="#4B5563"
+                        Command="{Binding ProfileCommand}"
+                        Content="管理员"
+                        FontSize="13"
+                        FontWeight="Medium"
                         Foreground="White"
                         Style="{StaticResource MaterialDesignOutlineChip}">
+
                         <materialDesign:Chip.Icon>
-                            <Image Source="{Binding ImageUrl}" />
+                            <Grid Width="24" Height="24">
+                                <Ellipse
+                                    Width="24"
+                                    Height="24"
+                                    Fill="#165DFF">
+                                    <Ellipse.Effect>
+                                        <DropShadowEffect
+                                            BlurRadius="4"
+                                            Opacity="0.4"
+                                            ShadowDepth="1"
+                                            Color="#165DFF" />
+                                    </Ellipse.Effect>
+                                </Ellipse>
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="10"
+                                    FontWeight="Bold"
+                                    Foreground="White"
+                                    Text="AD" />
+                            </Grid>
                         </materialDesign:Chip.Icon>
+
+                        <!--  用户菜单下拉  -->
+                        <materialDesign:Chip.ContextMenu>
+                            <ContextMenu
+                                Background="#1F2937"
+                                BorderBrush="#374151"
+                                Foreground="White">
+
+                                <MenuItem Command="{Binding ProfileCommand}" Header="个人资料">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon
+                                            Width="16"
+                                            Height="16"
+                                            Foreground="#9CA3AF"
+                                            Kind="Account" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+
+                                <MenuItem Command="{Binding SettingsCommand}" Header="系统设置">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon
+                                            Width="16"
+                                            Height="16"
+                                            Foreground="#9CA3AF"
+                                            Kind="Cog" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+
+                                <Separator Background="#374151" />
+
+                                <MenuItem Command="{Binding LogoutCommand}" Header="退出登录">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon
+                                            Width="16"
+                                            Height="16"
+                                            Foreground="#EF4444"
+                                            Kind="Logout" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </materialDesign:Chip.ContextMenu>
                     </materialDesign:Chip>
+                </StackPanel>
+
+                <!--  中央区域（可放置搜索框或其他功能）  -->
+                <StackPanel
+                    Margin="0,0,20,0"
+                    VerticalAlignment="Center"
+                    DockPanel.Dock="Right"
+                    Orientation="Horizontal">
+
+                    <!--  搜索框  -->
+                    <TextBox
+                        Width="200"
+                        Height="32"
+                        Margin="0,0,10,0"
+                        Padding="5"
+                        materialDesign:HintAssist.Hint="搜索..."
+                        materialDesign:TextFieldAssist.HasClearButton="True"
+                        Background="#374151"
+                        BorderBrush="#4B5563"
+                        FontSize="13"
+                        Foreground="White"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
+
+                    <!--  通知按钮  -->
+                    <Button
+                        Width="32"
+                        Height="32"
+                        Margin="0,0,5,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{Binding NotificationsCommand}"
+                        Style="{StaticResource MaterialDesignToolButton}"
+                        ToolTip="通知">
+                        <Grid>
+                            <materialDesign:PackIcon
+                                Width="18"
+                                Height="18"
+                                Foreground="#9CA3AF"
+                                Kind="Bell" />
+                            <!--  通知角标  -->
+                            <Border
+                                Width="8"
+                                Height="8"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Background="#EF4444"
+                                CornerRadius="4">
+                                <Border.Effect>
+                                    <DropShadowEffect
+                                        BlurRadius="4"
+                                        Opacity="0.6"
+                                        ShadowDepth="0"
+                                        Color="#EF4444" />
+                                </Border.Effect>
+                            </Border>
+                        </Grid>
+                    </Button>
+
+                    <!--  帮助按钮  -->
+                    <Button
+                        Width="32"
+                        Height="32"
+                        Margin="5,0,0,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{Binding HelpCommand}"
+                        Style="{StaticResource MaterialDesignToolButton}"
+                        ToolTip="帮助">
+                        <materialDesign:PackIcon
+                            Width="18"
+                            Height="18"
+                            Foreground="#9CA3AF"
+                            Kind="HelpCircle" />
+                    </Button>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -64,53 +301,123 @@
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Border BorderBrush="#374151" BorderThickness="1">
+            <Border
+                Margin="10"
+                Background="#272E3B"
+                BorderBrush="#374151"
+                BorderThickness="1"
+                CornerRadius="1">
+
                 <ListBox
-                    Width="200"
-                    Margin="10,0"
+                    Width="220"
+                    Margin="10"
                     Padding="5"
-                    BorderBrush="#374151"
+                    Background="Transparent"
+                    BorderThickness="0"
                     FontFamily="Inter, system-ui, sans-serif"
-                    FontSize="25"
+                    FontSize="16"
                     Foreground="White"
-                    ItemsSource="{Binding MenuList}">
+                    ItemsSource="{Binding MenuList}"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto">
+
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel HorizontalAlignment="Center" />
+                            <StackPanel HorizontalAlignment="Stretch" />
                         </ItemsPanelTemplate>
                     </ListBox.ItemsPanel>
+
                     <ListBox.ItemContainerStyle>
                         <Style BasedOn="{StaticResource MaterialDesignListBoxItem}" TargetType="ListBoxItem">
-                            <Setter Property="materialDesign:ListBoxItemAssist.SelectedFocusedBackground" Value="#9CCDE2" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderBrush" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Margin" Value="0,2" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
                                         <Border
                                             x:Name="ItemBorder"
-                                            Width="180"
-                                            Padding="10"
-                                            BorderThickness="0.5"
-                                            CornerRadius="6">
+                                            Height="48"
+                                            Margin="5"
+                                            Padding="15,0"
+                                            Background="Transparent"
+                                            BorderBrush="Transparent"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            SnapsToDevicePixels="True">
+
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="24" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="20" />
+                                                </Grid.ColumnDefinitions>
+
+
+                                                <!--  标题  -->
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="SemiBold"
+                                                    Text="{Binding Title}"
+                                                    TextTrimming="CharacterEllipsis" />
+
+                                                <!--  指示器（选中状态显示）  -->
+                                                <Border
+                                                    x:Name="SelectionIndicator"
+                                                    Grid.Column="2"
+                                                    Width="4"
+                                                    Height="16"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center"
+                                                    Background="#165DFF"
+                                                    CornerRadius="2"
+                                                    Opacity="0" />
+
+
+                                            </Grid>
+
+                                            <!--  交互命令  -->
                                             <i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="MouseLeftButtonUp">
                                                     <i:InvokeCommandAction Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
                                                 </i:EventTrigger>
                                             </i:Interaction.Triggers>
-                                            <TextBlock Text="{Binding Title}" />
                                         </Border>
+
                                         <!--  触发器：处理选中、悬停状态  -->
                                         <ControlTemplate.Triggers>
-                                            <!--  选中状态  -->
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="ItemBorder" Property="Background" Value="#4685B9" />
-                                                <Setter Property="Foreground" Value="YellowGreen" />
-                                                <!--  选中时蓝色背景  -->
-                                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#3E4A61" />
-                                            </Trigger>
                                             <!--  鼠标悬停  -->
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="ItemBorder" Property="Background" Value="#3E4A61" />
-                                                <!--  悬停时稍亮背景  -->
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="#374151" />
+                                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#4B5563" />
+                                                <Setter Property="Foreground" Value="#E5E7EB" />
+                                            </Trigger>
+
+                                            <!--  选中状态  -->
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="#165DFF" />
+                                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#165DFF" />
+                                                <Setter TargetName="SelectionIndicator" Property="Opacity" Value="1" />
+                                                <Setter Property="Foreground" Value="White" />
+                                            </Trigger>
+
+                                            <!--  焦点状态  -->
+                                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#165DFF" />
+                                                <Setter TargetName="ItemBorder" Property="BorderThickness" Value="2" />
+                                            </Trigger>
+
+                                            <!--  禁用状态  -->
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Foreground" Value="#6B7280" />
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="Transparent" />
+                                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="Transparent" />
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -118,6 +425,13 @@
                             </Setter>
                         </Style>
                     </ListBox.ItemContainerStyle>
+
+                    <!--  列表项之间的分隔线  -->
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <ContentPresenter Content="{Binding}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
                 </ListBox>
             </Border>
             <ContentControl Grid.Column="1" prism:RegionManager.RegionName="MainContentRegion" />
