@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using DualModeMonitorSystem.Models;
+using DualModeMonitorSystem.Models.Enums;
 using LiveChartsCore;
 using LiveChartsCore.Drawing;
 using LiveChartsCore.SkiaSharpView;
@@ -19,7 +20,6 @@ namespace DualModeMonitorSystem.ViewModels
     /// </summary>
     public class DashboardViewModel : ViewModelBase, INavigationAware
     {
-        public List<Statistica> StatisticsResult { get; set; }
         public ISeries[] Series { get; set; }
             = new ISeries[]
             {                
@@ -41,7 +41,6 @@ namespace DualModeMonitorSystem.ViewModels
                 },
             };
 
-        public ObservableCollection<DeviceDto> Devies { get; set; } 
         public Axis[] XAxes { get; set; }
             = new Axis[]
             {
@@ -88,38 +87,9 @@ namespace DualModeMonitorSystem.ViewModels
             }
         };
 
-        public ObservableCollection<Alert> RecentAlerts { get; set; } 
         public DashboardViewModel()
         {
-            StatisticsResult = new List<Statistica>
-            {
-                new Statistica { Title = "设备总数", Value = 1200 ,Icon = "DesktopClassic"},
-                new Statistica { Title = "在线设备", Value = 350 ,Icon = "MonitorCellphoneStar"},
-                new Statistica { Title = "今日警告", Value = 8760 ,Icon = "Alert"},
-                new Statistica { Title = "MES上传成功率", Value = 45 ,Icon = "ProgressUpload"}
-            };
-            Devies =  new ObservableCollection<DeviceDto>
-            {
-            new DeviceDto { PortName="COM1",Position="位置1",Temperature="36.5",Humidity="45",Status="Warning",LastUpdated=DateTime.Now},
-            new DeviceDto { PortName="COM2",Position="位置2",Temperature="38.2",Humidity="50",Status="Normal",LastUpdated=DateTime.Now},
-            new DeviceDto { PortName="COM3",Position="位置3",Temperature="40.1",Humidity="55",Status="Error",LastUpdated=DateTime.Now},
-            new DeviceDto { PortName="COM1",Position="位置1",Temperature="36.5",Humidity="45",Status="Warning",LastUpdated=DateTime.Now},
-            new DeviceDto { PortName="COM2",Position="位置2",Temperature="38.2",Humidity="50",Status="Normal",LastUpdated=DateTime.Now},
-            new DeviceDto { PortName="COM3",Position="位置3",Temperature="40.1",Humidity="55",Status="Error",LastUpdated=DateTime.Now},
-            new DeviceDto { PortName="COM1",Position="位置1",Temperature="36.5",Humidity="45",Status="Warning",LastUpdated=DateTime.Now},
-            new DeviceDto { PortName="COM2",Position="位置2",Temperature="38.2",Humidity="50",Status="Normal",LastUpdated=DateTime.Now},
-            new DeviceDto { PortName="COM3",Position="位置3",Temperature="40.1",Humidity="55",Status="Error",LastUpdated=DateTime.Now},
-
-            };
-            RecentAlerts = new ObservableCollection<Alert>
-            {
-                new Alert { Title="温度过高",Time=DateTime.Now.AddMinutes(-10),Level=Convert.AlertLevel.Error,Status=Convert.AlertStatus.Unhandled,Description="设备COM3的温度超过设定阈值" },
-                new Alert { Title="湿度过低",Time=DateTime.Now.AddHours(-1),Level=Convert.AlertLevel.Warning,Status=Convert.AlertStatus.Handled,Description="设备COM2的湿度低于设定阈值" },
-                new Alert { Title="设备离线",Time=DateTime.Now.AddMinutes(-30),Level=Convert.AlertLevel.Offline,Status=Convert.AlertStatus.Retry,Description="设备COM5未响应，可能已离线" },
-                new Alert { Title="温度过高",Time=DateTime.Now.AddMinutes(-10),Level=Convert.AlertLevel.Error,Status=Convert.AlertStatus.Unhandled,Description="设备COM3的温度超过设定阈值" },
-                new Alert { Title="湿度过低",Time=DateTime.Now.AddHours(-1),Level=Convert.AlertLevel.Warning,Status=Convert.AlertStatus.Handled,Description="设备COM2的湿度低于设定阈值" },
-                new Alert { Title="设备离线",Time=DateTime.Now.AddMinutes(-30),Level=Convert.AlertLevel.Offline,Status=Convert.AlertStatus.Retry,Description="设备COM5未响应，可能已离线" }
-            };
+            
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)

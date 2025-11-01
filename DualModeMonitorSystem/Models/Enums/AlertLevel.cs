@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DualModeMonitorSystem.Convert
+namespace DualModeMonitorSystem.Models.Enums
 {
     /// <summary>
     /// 警报级别枚举

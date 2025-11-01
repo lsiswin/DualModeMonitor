@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -12,36 +12,20 @@ namespace DualModeMonitorSystem.ViewModels
     {
         private readonly IRegionManager regionManager;
 
-        public DelegateCommand<MenuItem> NavigateCommand => new DelegateCommand<MenuItem>(NavigateTo);
-        public List<MenuItem> MenuList { get; } = new List<MenuItem>
-            {
-                new MenuItem { Title = "仪表盘", ViewName = "DashboardView" },
-                new MenuItem { Title = "系统设置", ViewName = "SettingsView" },
-                new MenuItem { Title = "协议配置", ViewName = "SerialConfigView" },
-                new MenuItem { Title = "历史数据", ViewName = "HistoryDataView" },
-                new MenuItem{Title="实时监控",ViewName="RealTimeMonitorView" }
-            };
-
+        
         public MainViewModel()
         {
             
         }
         public MainViewModel(IRegionManager regionManager)
         {
-            MenuList = new List<MenuItem>
-            {
-                new MenuItem { Title = "仪表盘", ViewName = "DashboardView" },
-                new MenuItem { Title = "系统设置", ViewName = "SettingsView" },
-                new MenuItem { Title = "协议配置", ViewName = "SerialConfigView" },
-                new MenuItem { Title = "历史数据", ViewName = "HistoryDataView" },
-                new MenuItem{Title="实时监控",ViewName="RealTimeMonitorView" }
-            };
+            
             this.regionManager = regionManager;
         }
 
-        public void NavigateTo(MenuItem item)
-        {
-            regionManager.RequestNavigate("MainContentRegion", item.ViewName);
-        }
+        //public void NavigateTo(MenuItem item)
+        //{
+        //    regionManager.RequestNavigate("MainContentRegion", item.ViewName);
+        //}
     }
 }

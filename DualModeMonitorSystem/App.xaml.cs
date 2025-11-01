@@ -1,4 +1,4 @@
-﻿using System.Configuration;
+using System.Configuration;
 using System.Data;
 using System.Windows;
 using DualModeMonitorSystem.Views;
@@ -21,6 +21,7 @@ namespace DualModeMonitorSystem
         {
             container.RegisterForNavigation<DashboardView>("DashboardView");
             container.RegisterForNavigation<SettingsView>("SettingsView");
+            container.RegisterForNavigation<DeviceConfigView>("DeviceConfigView");
             container.RegisterForNavigation<SerialConfigView>("SerialConfigView");
             container.RegisterForNavigation<HistoryDataView>("HistoryDataView");
             container.RegisterForNavigation<RealTimeMonitorView>("RealTimeMonitorView");
