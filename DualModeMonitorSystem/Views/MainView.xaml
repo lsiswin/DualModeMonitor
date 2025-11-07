@@ -317,7 +317,7 @@
                     FontFamily="Inter, system-ui, sans-serif"
                     FontSize="16"
                     Foreground="White"
-                    ItemsSource="{Binding MenuList}"
+                    ItemsSource="{Binding MenuItems}"
                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                     ScrollViewer.VerticalScrollBarVisibility="Auto">
 
@@ -358,6 +358,7 @@
                                                 </Grid.ColumnDefinitions>
 
 
+                                                <materialDesign:PackIcon VerticalAlignment="Center" Kind="{Binding Icon}" />
                                                 <!--  标题  -->
                                                 <TextBlock
                                                     Grid.Column="1"

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Media;
-using DualModeMonitorSystem.Models.Enums;
+using MonitorLibrary.Models.Enums;
 
 namespace DualModeMonitorSystem.Convert
 {
@@ -30,7 +30,7 @@ namespace DualModeMonitorSystem.Convert
                     case AlertLevel.Offline:
                         return new SolidColorBrush(Color.FromRgb(134, 144, 156)); // 灰色
                     default:
-                        return new SolidColorBrush(Colors.Gray); 
+                        return new SolidColorBrush(Colors.Gray);
 
                 }
             }

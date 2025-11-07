@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DualModeMonitorSystem", "DualModeMonitorSystem\DualModeMonitorSystem.csproj", "{C367BC25-640A-4E4C-BD00-77FB8D9282D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorApi", "MonitorApi\MonitorApi.csproj", "{598396B6-6EC8-4933-BA69-2316753ACC2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorLibrary", "MonitorLibrary\MonitorLibrary.csproj", "{9C2E5DED-C937-424C-8C89-BCAFE1F65AB0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,8 +19,19 @@ Global
 		{C367BC25-640A-4E4C-BD00-77FB8D9282D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C367BC25-640A-4E4C-BD00-77FB8D9282D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C367BC25-640A-4E4C-BD00-77FB8D9282D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{598396B6-6EC8-4933-BA69-2316753ACC2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{598396B6-6EC8-4933-BA69-2316753ACC2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{598396B6-6EC8-4933-BA69-2316753ACC2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{598396B6-6EC8-4933-BA69-2316753ACC2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C2E5DED-C937-424C-8C89-BCAFE1F65AB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C2E5DED-C937-424C-8C89-BCAFE1F65AB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C2E5DED-C937-424C-8C89-BCAFE1F65AB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C2E5DED-C937-424C-8C89-BCAFE1F65AB0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {54BBB64E-4338-4D34-AE2E-86D308817BF0}
 	EndGlobalSection
 EndGlobal

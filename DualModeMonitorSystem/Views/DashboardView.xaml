@@ -16,7 +16,7 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <convert:AlertLevelToColorConverter x:Key="AlertLevelToColorConverter" />
-        <convert:AlertStatusToColorConverter x:Key="AlertStatusToColorConverter" />
+        <convert:StatusToColorConverter x:Key="AlertStatusToColorConverter" />
     </UserControl.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Hidden">
 
