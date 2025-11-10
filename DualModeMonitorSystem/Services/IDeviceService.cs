@@ -16,5 +16,7 @@ namespace DualModeMonitorSystem.Services
         Task<ApiResponse<HumitureDevices>> UpdateDeviceAsync(HumitureDevices device);
         Task<bool> DeleteDeviceAsync(int id);
         Task<List<DeviceStatus>> GetDeviceStatusAsync();
+
+        Task<ApiResponse<List<DataPoint>>> GetDataPointByDevice(int id);
     }
 }

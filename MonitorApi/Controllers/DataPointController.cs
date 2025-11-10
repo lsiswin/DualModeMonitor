@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using MonitorApi.Services;
 using MonitorLibrary.Models;
 
@@ -88,11 +89,11 @@ namespace MonitorApi.Controllers
         /// </summary>
         /// <param name="deviceId"></param>
         /// <returns></returns>
-        [HttpGet]
-        public ActionResult<IEnumerable<DataPoint>> GetDataPointsByDeviceId(int deviceId)
+        [HttpGet("{deviceId}")]
+        public async Task<ApiResponse<IEnumerable<DataPoint>>> GetDataPointsByDeviceId(int deviceId)
         {
-            var dataPoints = dataPointService.GetDataPointsByDeviceIdAsync(deviceId);
-            return new OkObjectResult(dataPoints);
+            var dataPoints = await dataPointService.GetDataPointsByDeviceIdAsync(deviceId);
+            return ApiResponse<IEnumerable<DataPoint>>.SuccessResult(dataPoints);
         }
     }
 }

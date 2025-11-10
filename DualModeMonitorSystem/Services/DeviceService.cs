@@ -45,5 +45,10 @@ namespace DualModeMonitorSystem.Services
         {
             return await _httpService.PostAsync<ApiResponse<HumitureDevices>>($"/api/devices/{device.Id}", device);
         }
+
+        public async Task<ApiResponse<List<DataPoint>>> GetDataPointByDevice(int id)
+        {
+            return await _httpService.GetAsync<ApiResponse<List<DataPoint>>>($"/api/DataPoint/GetDataPointsByDeviceId/{id}");
+        }
     }
 }
