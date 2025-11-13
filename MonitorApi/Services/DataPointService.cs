@@ -21,7 +21,7 @@ namespace MonitorApi.Services
         public async Task<List<DataPoint>> GetDataPointsByDeviceIdAsync(int deviceId)
         {
             // 使用LINQ查询数据库，获取指定设备ID的数据点列表
-            return await GetByConditionAsync(dp => dp.DeviceId == deviceId);           
+            return await GetByConditionAsync(dp => dp.DeviceId == deviceId,"ModbusConfig");           
 
         }
     }

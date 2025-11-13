@@ -57,6 +57,12 @@ namespace MonitorLibrary.Models
         public decimal DataMultiplier { get; set; } = 1.0m;
 
         /// <summary>
+        /// 数据偏移（如10=实际值=寄存器值+10）
+        /// </summary>
+        [Required]
+        public decimal Offset { get; set; } = 0m;
+
+        /// <summary>
         /// 字节序（BigEndian/LittleEndian）
         /// </summary>
         [MaxLength(20)]

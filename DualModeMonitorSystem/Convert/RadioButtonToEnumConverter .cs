@@ -8,21 +8,25 @@ using System.Windows.Data;
 
 namespace DualModeMonitorSystem.Convert
 {
-    public class EnumValueConverter : IValueConverter
+    public class RadioButtonToEnumConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null || parameter == null)
                 return false;
 
-            return value.Equals(parameter);
+            return value.ToString() == parameter.ToString();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            if (value == null || parameter == null)
+                return Binding.DoNothing;
+
             if ((bool)value)
-                return parameter;
-            return null;
+                return Enum.Parse(targetType, parameter.ToString());
+
+            return Binding.DoNothing;
         }
     }
 }

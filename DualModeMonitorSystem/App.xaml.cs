@@ -3,6 +3,7 @@ using System.Configuration;
 using System.Data;
 using System.Windows;
 using DualModeMonitorSystem.Services;
+using DualModeMonitorSystem.ViewModels;
 using DualModeMonitorSystem.Views;
 using Microsoft.Extensions.Configuration;
 using Prism.Ioc;
@@ -44,6 +45,7 @@ namespace DualModeMonitorSystem
             container.RegisterForNavigation<HistoryDataView>("HistoryDataView");
             container.RegisterForNavigation<RealTimeMonitorView>("RealTimeMonitorView");
 
+            container.RegisterDialog<AddRegisterMappingDialog, AddRegisterMappingDialogViewModel>("AddRegisterMappingDialog");
             // 注册HttpService，通常注册为单例，因为HttpClient最好复用
             container.RegisterSingleton<IHttpService, HttpService>();
             container.Register<IDeviceService, DeviceService>();

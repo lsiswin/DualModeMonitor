@@ -16,49 +16,59 @@ namespace DualModeMonitorSystem.ViewModels
     public class DeviceConfigViewModel : ViewModelBase, INavigationAware
     {
         private readonly IDeviceService deviceService;
-        public List<DataBits> DataBits { get; set; } = Enum.GetValues(typeof(DataBits)).Cast<DataBits>().ToList();
-        public List<StopBits> StopBits { get; set; } = Enum.GetValues(typeof(StopBits)).Cast<StopBits>().ToList();
-        public List<Parity> Parity { get; set; } = Enum.GetValues(typeof(Parity)).Cast<Parity>().ToList();
-        public List<BaudRate> BaudRates { get; set; } = Enum.GetValues(typeof(BaudRate)).Cast<BaudRate>().ToList();
-
+        private readonly IDialogService dialogService;
         private HumitureDevices selectDevice;
 
         private SerialPortConfig serialPort;
 
+        private ModbusConfig _modbusConfig;
+
+        public ModbusConfig ModbusConfig
+        {
+            get { return _modbusConfig; }
+            set { _modbusConfig = value; RaisePropertyChanged(); }
+        }
+
+        public ObservableCollection<RegisterMapping> RegisterMappings { get; set; } = new ObservableCollection<RegisterMapping>();
         private DataPoint _selectedDataPoint;
 
         public DataPoint SelectedDataPoint
         {
             get { return _selectedDataPoint; }
-            set { _selectedDataPoint = value;RaisePropertyChanged(); }
+            set { _selectedDataPoint = value;RaisePropertyChanged(); if(value != null) ModbusConfig = value.ModbusConfig; }
         }
-        private int _selectedTabIndex;
 
-        /// <summary>
-        /// 绑定选项卡
-        /// </summary>
-        public int SelectedTabIndex
-        {
-            get { return _selectedTabIndex; }
-            set {
-                if (_selectedTabIndex != value)
-                {
-                    _selectedTabIndex = value;
-                    RaisePropertyChanged();
-                    if (value == 1 )
-                    {
-                        // 执行数据点初始化逻辑
-                        ExecuteSwitchToSecondTab();
-                    }
-
-                }
-            }
-        }
 
         private async Task ExecuteSwitchToSecondTab()
-        {
+        {            
+            DataPoints.Clear();
+            RegisterMappings.Clear();
             var response =  await deviceService.GetDataPointByDevice(SelectDevice.Id);
             DataPoints.AddRange(response.Data);
+            var mappings = DataPoints.Select(dp => new RegisterMapping
+            {
+                DataPointId = dp.Id,
+                DataType = dp.Name,
+                Unit = dp.Unit,
+                Address = dp.ModbusConfig.RegisterStart,
+                Format = dp.ModbusConfig.DataFormat,
+                Factor = dp.ModbusConfig.DataMultiplier,
+                Offset = dp.ModbusConfig.Offset, // 如果已添加
+                IsEnabled = dp.EnableAlarm,
+                EditCommand = new DelegateCommand(() => EditMapping(dp.Id)),
+                DeleteCommand = new DelegateCommand(() => DeleteMapping(dp.Id))
+            }).ToList();
+            RegisterMappings.AddRange(mappings);
+        }
+
+        private void DeleteMapping(int id)
+        {
+            DataPoints.Remove(DataPoints.FirstOrDefault(dp => dp.Id == id));
+        }
+
+        private void EditMapping(int id)
+        {
+            SelectedDataPoint = DataPoints.FirstOrDefault(dp => dp.Id == id);
         }
 
         /// <summary>
@@ -67,7 +77,7 @@ namespace DualModeMonitorSystem.ViewModels
         public HumitureDevices SelectDevice
         {
             get { return selectDevice; }
-            set { selectDevice = value; RaisePropertyChanged();SerialPort = value.SerialPortConfig; }
+            set { selectDevice = value; RaisePropertyChanged();SerialPort = value.SerialPortConfig; ExecuteSwitchToSecondTab(); }
         }
         /// <summary>
         /// 选中设备对应的串口配置
@@ -85,10 +95,21 @@ namespace DualModeMonitorSystem.ViewModels
         /// 所有设备集合
         /// </summary>
         public ObservableCollection<HumitureDevices> Devices { get; set; } = new ObservableCollection<HumitureDevices>();
-        public DeviceConfigViewModel(IDeviceService deviceService)
+
+        public DelegateCommand AddRegisterMappingCommand { get; private set; }
+        public DeviceConfigViewModel(IDeviceService deviceService,IDialogService dialogService)
         {
             this.deviceService = deviceService;
-           
+            this.dialogService = dialogService;
+            AddRegisterMappingCommand = new DelegateCommand(AddRegisterMapping);
+        }
+
+        private void AddRegisterMapping()
+        {
+            dialogService.ShowDialog("AddRegisterMappingDialog", () =>
+            {
+                // 对话框关闭后的回调，可以刷新数据等操作
+            });
         }
 
         private async void LoadDevices() {

@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:convert="clr-namespace:DualModeMonitorSystem.Convert"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:DualModeMonitorSystem.Views"
+    xmlns:enums="clr-namespace:MonitorLibrary.Models.Enums;assembly=MonitorLibrary"
+    xmlns:local="clr-namespace:DualModeMonitorSystem"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:vm="clr-namespace:DualModeMonitorSystem.ViewModels"
@@ -13,7 +14,8 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <convert:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
-        <convert:EnumValueConverter x:Key="EnumValueConverter" />
+        <convert:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+        <convert:RadioButtonToEnumConverter x:Key="RadioButtonToEnumConverter" />
     </UserControl.Resources>
     <Grid Background="#1D2129">
         <Grid.ColumnDefinitions>
@@ -339,9 +341,15 @@
                                                 Padding="10"
                                                 Background="#1D2129"
                                                 BorderBrush="#4B5563"
-                                                ItemsSource="{Binding BaudRates}"
+                                                ItemsSource="{local:EnumBindingSource EnumType=enums:BaudRate}"
                                                 SelectedItem="{Binding SerialPort.BaudRate}"
-                                                Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+                                                Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
                                         </StackPanel>
 
                                         <StackPanel Margin="0,0,15,0">
@@ -355,9 +363,15 @@
                                                 Padding="10"
                                                 Background="#1D2129"
                                                 BorderBrush="#4B5563"
-                                                ItemsSource="{Binding DataBits}"
+                                                ItemsSource="{local:EnumBindingSource EnumType=enums:DataBits}"
                                                 SelectedItem="{Binding SerialPort.DataBits}"
-                                                Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+                                                Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
                                         </StackPanel>
 
                                         <StackPanel Margin="15,0,0,0">
@@ -371,9 +385,15 @@
                                                 Padding="10"
                                                 Background="#1D2129"
                                                 BorderBrush="#4B5563"
-                                                ItemsSource="{Binding StopBits}"
+                                                ItemsSource="{local:EnumBindingSource EnumType=enums:StopBits}"
                                                 SelectedItem="{Binding SerialPort.StopBits, Mode=TwoWay}"
-                                                Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+                                                Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
                                         </StackPanel>
                                     </UniformGrid>
 
@@ -390,9 +410,15 @@
                                                 Padding="10"
                                                 Background="#1D2129"
                                                 BorderBrush="#4B5563"
-                                                ItemsSource="{Binding Parity}"
+                                                ItemsSource="{local:EnumBindingSource EnumType=enums:Parity}"
                                                 SelectedItem="{Binding SerialPort.Parity, Mode=TwoWay}"
-                                                Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+                                                Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
                                         </StackPanel>
 
                                         <StackPanel Margin="15,0,0,0">
@@ -593,7 +619,7 @@
                                                 Padding="10"
                                                 Background="#1D2129"
                                                 BorderBrush="#4B5563"
-                                                SelectedItem="{Binding SelectedDevice.ModbusConfig.ProtocolType}"
+                                                SelectedIndex="0"
                                                 Style="{StaticResource MaterialDesignOutlinedComboBox}">
                                                 <ComboBoxItem Content="Modbus RTU" />
                                                 <ComboBoxItem Content="Modbus TCP" />
@@ -614,7 +640,7 @@
                                                 Maximum="247"
                                                 Minimum="1"
                                                 Style="{StaticResource MaterialDesignOutlinedNumericUpDown}"
-                                                Value="{Binding SelectedDevice.ModbusConfig.SlaveAddress}" />
+                                                Value="{Binding ModbusConfig.DeviceAddress}" />
                                         </StackPanel>
 
                                         <StackPanel Margin="0,0,15,0">
@@ -628,12 +654,14 @@
                                                 Padding="10"
                                                 Background="#1D2129"
                                                 BorderBrush="#4B5563"
-                                                SelectedItem="{Binding SelectedDevice.ModbusConfig.FunctionCode}"
+                                                ItemsSource="{local:EnumBindingSource enums:ModbusFunctionCode}"
+                                                SelectedItem="{Binding ModbusConfig.FunctionCode}"
                                                 Style="{StaticResource MaterialDesignOutlinedComboBox}">
-                                                <ComboBoxItem Content="03 - 读保持寄存器" />
-                                                <ComboBoxItem Content="04 - 读输入寄存器" />
-                                                <ComboBoxItem Content="06 - 写单个寄存器" />
-                                                <ComboBoxItem Content="16 - 写多个寄存器" />
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
                                             </ComboBox>
                                         </StackPanel>
 
@@ -648,12 +676,14 @@
                                                 Padding="10"
                                                 Background="#1D2129"
                                                 BorderBrush="#4B5563"
-                                                SelectedItem="{Binding SelectedDevice.ModbusConfig.DataFormat}"
+                                                ItemsSource="{local:EnumBindingSource EnumType=enums:ModbusDataFormat}"
+                                                SelectedItem="{Binding ModbusConfig.DataFormat}"
                                                 Style="{StaticResource MaterialDesignOutlinedComboBox}">
-                                                <ComboBoxItem Content="16位整数 (INT16)" />
-                                                <ComboBoxItem Content="32位浮点 (FLOAT32)" />
-                                                <ComboBoxItem Content="32位整数 (INT32)" />
-                                                <ComboBoxItem Content="64位浮点 (FLOAT64)" />
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
                                             </ComboBox>
                                         </StackPanel>
                                     </UniformGrid>
@@ -674,7 +704,7 @@
                                                 Maximum="65535"
                                                 Minimum="0"
                                                 Style="{StaticResource MaterialDesignOutlinedNumericUpDown}"
-                                                Value="{Binding SelectedDevice.ModbusConfig.StartAddress}" />
+                                                Value="{Binding ModbusConfig.RegisterStart}" />
                                         </StackPanel>
 
                                         <StackPanel Margin="15,0,0,0">
@@ -682,7 +712,7 @@
                                                 Margin="0,0,0,8"
                                                 FontSize="12"
                                                 FontWeight="SemiBold"
-                                                Text="寄存器数量" />
+                                                Text="寄存器长度" />
                                             <md:NumericUpDown
                                                 Height="40"
                                                 Padding="10"
@@ -691,7 +721,7 @@
                                                 Maximum="125"
                                                 Minimum="1"
                                                 Style="{StaticResource MaterialDesignOutlinedNumericUpDown}"
-                                                Value="{Binding SelectedDevice.ModbusConfig.RegisterCount}" />
+                                                Value="{Binding ModbusConfig.RegisterLength}" />
                                         </StackPanel>
                                     </UniformGrid>
 
@@ -705,15 +735,17 @@
                                         <StackPanel Orientation="Horizontal">
                                             <RadioButton
                                                 Margin="0,0,15,0"
-                                                Content="{Binding SelectedDevice.ModbusConfig.Endianness}"
+                                                Background="#36CFC9"
+                                                Content="大端 (Big-Endian)"
+                                                Foreground="White"
                                                 GroupName="ByteOrder"
-                                                IsChecked="{Binding SelectedDevice.ModbusConfig.Endianness, Converter={StaticResource EnumValueConverter}}"
-                                                Style="{StaticResource MaterialDesignChoiceChipOutlineRadioButton}" />
+                                                IsChecked="{Binding ModbusConfig.Endianness, Converter={StaticResource RadioButtonToEnumConverter}, ConverterParameter={x:Static enums:ModbusByteOrder.BigEndian}}" />
                                             <RadioButton
-                                                Content="{Binding SelectedDevice.ModbusConfig.Endianness}"
+                                                Background="#165DFF"
+                                                Content="小端 (Little-Endian)"
+                                                Foreground="White"
                                                 GroupName="ByteOrder"
-                                                IsChecked="{Binding SelectedDevice.ModbusConfig.Endianness, Converter={StaticResource EnumValueConverter}}"
-                                                Style="{StaticResource MaterialDesignChoiceChipOutlineRadioButton}" />
+                                                IsChecked="{Binding ModbusConfig.Endianness, Converter={StaticResource RadioButtonToEnumConverter}, ConverterParameter={x:Static enums:ModbusByteOrder.LittleEndian}}" />
                                         </StackPanel>
                                     </StackPanel>
 
@@ -787,7 +819,6 @@
                                                 </StackPanel>
                                             </Button>
                                         </DockPanel>
-
                                         <!--  数据表格  -->
                                         <DataGrid
                                             MinHeight="200"
@@ -801,7 +832,7 @@
                                             Foreground="White"
                                             HeadersVisibility="All"
                                             IsReadOnly="True"
-                                            ItemsSource="{Binding SelectedDevice.RegisterMappings}">
+                                            ItemsSource="{Binding RegisterMappings}">
 
                                             <DataGrid.Resources>
                                                 <Style TargetType="DataGridColumnHeader">

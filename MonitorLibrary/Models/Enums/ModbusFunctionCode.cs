@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,13 +12,21 @@ namespace MonitorLibrary.Models.Enums
     /// </summary>
     public enum ModbusFunctionCode
     {
-        ReadCoils = 0x01,                       // 01 - 读线圈
-        ReadDiscreteInputs = 0x02,              // 02 - 读离散输入
-        ReadHoldingRegisters = 0x03,            // 03 - 读保持寄存器
-        ReadInputRegisters = 0x04,              // 04 - 读输入寄存器
-        WriteSingleCoil = 0x05,                 // 05 - 写单个线圈
-        WriteSingleRegister = 0x06,             // 06 - 写单个寄存器
-        WriteMultipleCoils = 0x0F,              // 15 - 写多个线圈
-        WriteMultipleRegisters = 0x10           // 16 - 写多个寄存器
+        [Description("01 - 读线圈")]
+        ReadCoils = 01,                       
+        [Description("02 - 读离散输入")]
+        ReadDiscreteInputs = 02,              
+        [Description("03 - 读保持寄存器")]
+        ReadHoldingRegisters = 03,            
+        [Description("04 - 读输入寄存器")]
+        ReadInputRegisters = 04,              
+        [Description("05 - 写单个线圈")]
+        WriteSingleCoil = 05,                 
+        [Description("06 - 写单个寄存器")]
+        WriteSingleRegister = 06,             
+        [Description("15 - 写多个线圈")]
+        WriteMultipleCoils = 15,              
+        [Description("16 - 写多个寄存器")]
+        WriteMultipleRegisters = 16           
     }
 }
