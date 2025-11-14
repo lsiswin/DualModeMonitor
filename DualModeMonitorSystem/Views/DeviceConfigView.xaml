@@ -8,6 +8,7 @@
     xmlns:local="clr-namespace:DualModeMonitorSystem"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:sys="clr-namespace:System.IO.Ports;assembly=System"
     xmlns:vm="clr-namespace:DualModeMonitorSystem.ViewModels"
     d:Height="1200"
     d:Width="1378"
@@ -385,7 +386,7 @@
                                                 Padding="10"
                                                 Background="#1D2129"
                                                 BorderBrush="#4B5563"
-                                                ItemsSource="{local:EnumBindingSource EnumType=enums:StopBits}"
+                                                ItemsSource="{local:EnumBindingSource EnumType=sys:StopBits}"
                                                 SelectedItem="{Binding SerialPort.StopBits, Mode=TwoWay}"
                                                 Style="{StaticResource MaterialDesignOutlinedComboBox}">
                                                 <ComboBox.ItemTemplate>
@@ -410,7 +411,7 @@
                                                 Padding="10"
                                                 Background="#1D2129"
                                                 BorderBrush="#4B5563"
-                                                ItemsSource="{local:EnumBindingSource EnumType=enums:Parity}"
+                                                ItemsSource="{local:EnumBindingSource EnumType=sys:Parity}"
                                                 SelectedItem="{Binding SerialPort.Parity, Mode=TwoWay}"
                                                 Style="{StaticResource MaterialDesignOutlinedComboBox}">
                                                 <ComboBox.ItemTemplate>

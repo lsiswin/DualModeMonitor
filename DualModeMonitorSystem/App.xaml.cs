@@ -45,10 +45,16 @@ namespace DualModeMonitorSystem
             container.RegisterForNavigation<HistoryDataView>("HistoryDataView");
             container.RegisterForNavigation<RealTimeMonitorView>("RealTimeMonitorView");
 
+            // 注册自定义对话框窗口
+            container.Register<IDialogWindow, CustomDialogWindow>();
             container.RegisterDialog<AddRegisterMappingDialog, AddRegisterMappingDialogViewModel>("AddRegisterMappingDialog");
+            container.RegisterDialog<MessageDialog, MessageDialogViewModel>("MessageDialog");
+
             // 注册HttpService，通常注册为单例，因为HttpClient最好复用
             container.RegisterSingleton<IHttpService, HttpService>();
             container.Register<IDeviceService, DeviceService>();
+            container.Register<ISerialPortService, SerialPortService>();
+            container.Register<IModbusService, ModbusService>();
         }
     }
 

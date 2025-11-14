@@ -17,6 +17,7 @@ namespace DualModeMonitorSystem.ViewModels
     {
         private readonly IDeviceService deviceService;
         private readonly IDialogService dialogService;
+        private readonly IModbusService modbusService;
         private HumitureDevices selectDevice;
 
         private SerialPortConfig serialPort;
@@ -96,12 +97,36 @@ namespace DualModeMonitorSystem.ViewModels
         /// </summary>
         public ObservableCollection<HumitureDevices> Devices { get; set; } = new ObservableCollection<HumitureDevices>();
 
+        public DelegateCommand TestConnectionCommand { get; set; }
         public DelegateCommand AddRegisterMappingCommand { get; private set; }
-        public DeviceConfigViewModel(IDeviceService deviceService,IDialogService dialogService)
+        public DeviceConfigViewModel(IDeviceService deviceService,IDialogService dialogService,IModbusService modbusService)
         {
             this.deviceService = deviceService;
             this.dialogService = dialogService;
+            this.modbusService = modbusService;
             AddRegisterMappingCommand = new DelegateCommand(AddRegisterMapping);
+            TestConnectionCommand = new DelegateCommand(TestConnection);
+        }
+
+        private async void TestConnection()
+        {
+            if (SelectDevice == null)
+            {
+                dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", "请先选择设备！" } });
+            }
+            else
+            {
+                bool isSuccess = await modbusService.ConnectAsync(SelectDevice.SerialPortConfig);
+                if (isSuccess)
+                {
+                    dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", "连接成功！" } });
+                }
+                else
+                {
+                    dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", "连接失败，请检查配置！" } });
+                }
+            }
+            
         }
 
         private void AddRegisterMapping()

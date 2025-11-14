@@ -22,6 +22,7 @@
     <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
     <PackageReference Include="System.IO.Ports" Version="9.0.10" />
     <PackageReference Include="System.ObjectModel" Version="4.3.0" />
+    <PackageReference Include="System.Reactive" Version="6.1.0" />
   </ItemGroup>
 
   <ItemGroup>

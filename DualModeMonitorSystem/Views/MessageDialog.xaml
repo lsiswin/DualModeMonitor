@@ -1,0 +1,46 @@
+﻿<UserControl
+    x:Class="DualModeMonitorSystem.Views.MessageDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:DualModeMonitorSystem"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <materialDesign:Card
+        Width="300"
+        Height="200"
+        Margin="16"
+        Background="#272E3B"
+        BorderThickness="2"
+        UniformCornerRadius="3">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Button
+                HorizontalAlignment="Right"
+                Command="{Binding CloseDialogCommand}"
+                Content="X"
+                Style="{StaticResource MaterialDesignRaisedButton}" />
+            <!--  消息内容  -->
+            <TextBlock
+                Grid.Row="1"
+                Margin="20"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                d:Text="Message"
+                FontSize="16"
+                Foreground="White"
+                Text="{Binding Message}"
+                TextWrapping="Wrap" />
+
+        </Grid>
+    </materialDesign:Card>
+</UserControl>
