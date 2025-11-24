@@ -7,6 +7,10 @@ using Newtonsoft.Json;
 
 namespace MonitorLibrary.Models
 {
+    /// <summary>
+    /// 响应结果封装
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class ApiResponse<T>
     {
         [JsonProperty("success")]

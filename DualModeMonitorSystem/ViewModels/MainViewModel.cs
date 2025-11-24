@@ -2,13 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DualModeMonitorSystem.Services;
 using MonitorLibrary.Models;
 
 namespace DualModeMonitorSystem.ViewModels
 {
-    public class MainViewModel
+    public class MainViewModel:BindableBase
     {
         private readonly IRegionManager regionManager;
 
@@ -22,10 +24,27 @@ namespace DualModeMonitorSystem.ViewModels
             new MenuItem{ Title = "历史数据", ViewName = "HistoryDataView" ,Icon = "History"},
             new MenuItem{ Title = "设置", ViewName = "SettingsView" ,Icon="Setting"},
         };
-        public MainViewModel(IRegionManager regionManager)
+
+        private string _latestLog;
+
+        public string LatestLog
         {
+            get { return _latestLog; }
+            set { _latestLog = value;RaisePropertyChanged(); }
+        }
+
+        public MainViewModel(IRegionManager regionManager,IModbusService modbusService)
+        {
+
             this.regionManager = regionManager;
+            modbusService.LogMessage.Subscribe(LogSet);
             NavigateCommand = new DelegateCommand<MenuItem>(NavigateTo);
+        }
+
+        private void LogSet(string obj)
+        {
+            string timeStamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            LatestLog = obj+timeStamp;
         }
 
         public void NavigateTo(MenuItem item)

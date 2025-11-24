@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace MonitorLibrary
 {
+    /// <summary>
+    /// 分页响应模型
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class PaginatedResponse<T>
     {
         public List<T> Items { get; set; } = new List<T>();

@@ -18,5 +18,6 @@ namespace DualModeMonitorSystem.Services
         Task<List<DeviceStatus>> GetDeviceStatusAsync();
 
         Task<ApiResponse<List<DataPoint>>> GetDataPointByDevice(int id);
+        Task<ApiResponse<DataPoint>> UpdateDataPointAsync(DataPoint dataPoint);
     }
 }

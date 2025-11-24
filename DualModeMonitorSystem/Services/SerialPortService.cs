@@ -68,20 +68,20 @@ namespace DualModeMonitorSystem.Services
                 if (IsOpen)
                     await CloseAsync();
 
-                // 初始化串口参数
-                _serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits)
+                await Task.Run(() =>
                 {
-                    ReadTimeout = 1000, // 读取超时时间（毫秒）
-                    WriteTimeout = 1000, // 写入超时时间（毫秒）
-                    Encoding = Encoding.UTF8 // 默认编码
-                };
+                        _serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits)
+                        {
+                            ReadTimeout = 1000,
+                            WriteTimeout = 1000,
+                            Encoding = Encoding.UTF8
+                        };
 
-                // 订阅串口自带的数据接收和错误事件
-                _serialPort.DataReceived += OnDataReceived;
-                _serialPort.ErrorReceived += OnErrorReceived;
-
-                // 打开串口
-                _serialPort.Open();
+                        _serialPort.DataReceived += OnDataReceived;
+                        _serialPort.ErrorReceived += OnErrorReceived;
+                        _serialPort.Open(); // 这个同步调用在后台线程执行
+                    
+                });
                 _statusChangedSubject.OnNext($"串口 {portName} 打开成功");
 
                 // 启动后台数据读取任务（使用独立线程避免阻塞）
@@ -101,14 +101,18 @@ namespace DualModeMonitorSystem.Services
         /// </summary>
         public async Task CloseAsync()
         {
+            if (_serialPort == null)
+                return;
             try
             {
-                // 如果串口已打开，则关闭
-                if (_serialPort?.IsOpen == true)
+                await Task.Run(() =>
                 {
-                    _serialPort.Close();
-                    _statusChangedSubject.OnNext($"串口 {_serialPort.PortName} 已关闭");
-                }
+                    if (_serialPort.IsOpen)
+                    {
+                        _serialPort.Close();
+                        _statusChangedSubject.OnNext($"串口 {_serialPort.PortName} 已关闭");
+                    }
+                });
             }
             catch (Exception ex)
             {

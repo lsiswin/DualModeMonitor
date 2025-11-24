@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MonitorLibrary.Models;
 using MonitorLibrary.Models.Enums;
@@ -57,7 +58,7 @@ namespace DualModeMonitorSystem.Services
         {
             try
             {
-                /*_slaveId = config.DeviceId; // 保存从站地址*/
+                _slaveId = 1; // 保存从站地址
 
                 // 调用串口服务打开串口（Modbus RTU基于串口通信）
                 var success = await _serialPortService.OpenAsync(config.PortName, (int)config.BaudRate, config.Parity, (int)config.DataBits, config.StopBits);
@@ -374,12 +375,65 @@ namespace DualModeMonitorSystem.Services
             if (!sent)
                 throw new Exception("发送Modbus请求失败");
 
-            // 等待设备响应（实际应用中需根据波特率计算延迟，或使用超时机制）
-            await Task.Delay(100); // 简化处理：固定延迟100ms
+            // 等待设备响应：订阅串口 DataReceived，累积字节直到达到预期长度或超时
+            var buffer = new List<byte>(expectedResponseLength);
+            var tcs = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+            CancellationTokenSource cts = new CancellationTokenSource();
 
-            // 注意：实际项目中需实现响应接收逻辑（从串口缓冲区读取数据）
-            // 此处为简化示例，返回空数组（长度为预期值）
-            return new byte[expectedResponseLength];
+            // 默认超时 2000ms；如果串口实现或配置可提供超时值，应使用该值
+            var timeoutMs = 2000;
+
+            IDisposable subscription = null;
+            try
+            {
+                subscription = _serialPortService.DataReceived.Subscribe(data =>
+                {
+                    try
+                    {
+                        if (data == null || data.Length == 0) return;
+                        lock (buffer)
+                        {
+                            buffer.AddRange(data);
+                            if (buffer.Count >= expectedResponseLength)
+                            {
+                                // 截取前 expectedResponseLength 个字节返回
+                                var result = buffer.Take(expectedResponseLength).ToArray();
+                                // 完成 tcs（注意：可能多次触发，故使用 TrySetResult）
+                                tcs.TrySetResult(result);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.TrySetException(ex);
+                    }
+                });
+
+                // 启动超时任务
+                cts.CancelAfter(timeoutMs);
+
+                using (cts.Token.Register(() => tcs.TrySetCanceled()))
+                {
+                    // 等待完成或取消
+                    var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(Timeout.Infinite, cts.Token));
+
+                    if (completedTask == tcs.Task)
+                    {
+                        // 成功接收
+                        return await tcs.Task; // 已完成
+                    }
+                    else
+                    {
+                        throw new TimeoutException($"等待Modbus响应超时（{timeoutMs}ms）");
+                    }
+                }
+            }
+            finally
+            {
+                // 取消订阅以释放资源
+                try { subscription?.Dispose(); } catch { }
+                cts.Dispose();
+            }
         }
 
         /// <summary>

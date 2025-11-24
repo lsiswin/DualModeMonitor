@@ -310,133 +310,160 @@
                         BorderBrush="#374151"
                         BorderThickness="1"
                         CornerRadius="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="32" />
+                            </Grid.RowDefinitions>
+                            <ListBox
+                                Width="220"
+                                Margin="10"
+                                Padding="5"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontFamily="Inter, system-ui, sans-serif"
+                                FontSize="16"
+                                Foreground="White"
+                                ItemsSource="{Binding MenuItems}"
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                ScrollViewer.VerticalScrollBarVisibility="Auto">
 
-                        <ListBox
-                            Width="220"
-                            Margin="10"
-                            Padding="5"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            FontFamily="Inter, system-ui, sans-serif"
-                            FontSize="16"
-                            Foreground="White"
-                            ItemsSource="{Binding MenuItems}"
-                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                            ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel HorizontalAlignment="Stretch" />
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
 
-                            <ListBox.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel HorizontalAlignment="Stretch" />
-                                </ItemsPanelTemplate>
-                            </ListBox.ItemsPanel>
+                                <ListBox.ItemContainerStyle>
+                                    <Style BasedOn="{StaticResource MaterialDesignListBoxItem}" TargetType="ListBoxItem">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="Margin" Value="0,2" />
+                                        <Setter Property="Padding" Value="0" />
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                        <Setter Property="VerticalContentAlignment" Value="Center" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBoxItem">
+                                                    <Border
+                                                        x:Name="ItemBorder"
+                                                        Height="48"
+                                                        Margin="5"
+                                                        Padding="15,0"
+                                                        Background="Transparent"
+                                                        BorderBrush="Transparent"
+                                                        BorderThickness="1"
+                                                        CornerRadius="6"
+                                                        SnapsToDevicePixels="True">
 
-                            <ListBox.ItemContainerStyle>
-                                <Style BasedOn="{StaticResource MaterialDesignListBoxItem}" TargetType="ListBoxItem">
-                                    <Setter Property="Background" Value="Transparent" />
-                                    <Setter Property="BorderBrush" Value="Transparent" />
-                                    <Setter Property="BorderThickness" Value="0" />
-                                    <Setter Property="Margin" Value="0,2" />
-                                    <Setter Property="Padding" Value="0" />
-                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                    <Setter Property="VerticalContentAlignment" Value="Center" />
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="ListBoxItem">
-                                                <Border
-                                                    x:Name="ItemBorder"
-                                                    Height="48"
-                                                    Margin="5"
-                                                    Padding="15,0"
-                                                    Background="Transparent"
-                                                    BorderBrush="Transparent"
-                                                    BorderThickness="1"
-                                                    CornerRadius="6"
-                                                    SnapsToDevicePixels="True">
-
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="24" />
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="20" />
-                                                        </Grid.ColumnDefinitions>
-
-
-                                                        <materialDesign:PackIcon VerticalAlignment="Center" Kind="{Binding Icon}" />
-                                                        <!--  标题  -->
-                                                        <TextBlock
-                                                            Grid.Column="1"
-                                                            VerticalAlignment="Center"
-                                                            FontSize="14"
-                                                            FontWeight="SemiBold"
-                                                            Text="{Binding Title}"
-                                                            TextTrimming="CharacterEllipsis" />
-
-                                                        <!--  指示器（选中状态显示）  -->
-                                                        <Border
-                                                            x:Name="SelectionIndicator"
-                                                            Grid.Column="2"
-                                                            Width="4"
-                                                            Height="16"
-                                                            HorizontalAlignment="Right"
-                                                            VerticalAlignment="Center"
-                                                            Background="#165DFF"
-                                                            CornerRadius="2"
-                                                            Opacity="0" />
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="24" />
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="20" />
+                                                            </Grid.ColumnDefinitions>
 
 
-                                                    </Grid>
+                                                            <materialDesign:PackIcon VerticalAlignment="Center" Kind="{Binding Icon}" />
+                                                            <!--  标题  -->
+                                                            <TextBlock
+                                                                Grid.Column="1"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="14"
+                                                                FontWeight="SemiBold"
+                                                                Text="{Binding Title}"
+                                                                TextTrimming="CharacterEllipsis" />
 
-                                                    <!--  交互命令  -->
-                                                    <i:Interaction.Triggers>
-                                                        <i:EventTrigger EventName="MouseLeftButtonUp">
-                                                            <i:InvokeCommandAction Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
-                                                        </i:EventTrigger>
-                                                    </i:Interaction.Triggers>
-                                                </Border>
+                                                            <!--  指示器（选中状态显示）  -->
+                                                            <Border
+                                                                x:Name="SelectionIndicator"
+                                                                Grid.Column="2"
+                                                                Width="4"
+                                                                Height="16"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Center"
+                                                                Background="#165DFF"
+                                                                CornerRadius="2"
+                                                                Opacity="0" />
 
-                                                <!--  触发器：处理选中、悬停状态  -->
-                                                <ControlTemplate.Triggers>
-                                                    <!--  鼠标悬停  -->
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="ItemBorder" Property="Background" Value="#374151" />
-                                                        <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#4B5563" />
-                                                        <Setter Property="Foreground" Value="#E5E7EB" />
-                                                    </Trigger>
 
-                                                    <!--  选中状态  -->
-                                                    <Trigger Property="IsSelected" Value="True">
-                                                        <Setter TargetName="ItemBorder" Property="Background" Value="#165DFF" />
-                                                        <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#165DFF" />
-                                                        <Setter TargetName="SelectionIndicator" Property="Opacity" Value="1" />
-                                                        <Setter Property="Foreground" Value="White" />
-                                                    </Trigger>
+                                                        </Grid>
 
-                                                    <!--  焦点状态  -->
-                                                    <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                                        <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#165DFF" />
-                                                        <Setter TargetName="ItemBorder" Property="BorderThickness" Value="2" />
-                                                    </Trigger>
+                                                        <!--  交互命令  -->
+                                                        <i:Interaction.Triggers>
+                                                            <i:EventTrigger EventName="MouseLeftButtonUp">
+                                                                <i:InvokeCommandAction Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
+                                                            </i:EventTrigger>
+                                                        </i:Interaction.Triggers>
+                                                    </Border>
 
-                                                    <!--  禁用状态  -->
-                                                    <Trigger Property="IsEnabled" Value="False">
-                                                        <Setter Property="Foreground" Value="#6B7280" />
-                                                        <Setter TargetName="ItemBorder" Property="Background" Value="Transparent" />
-                                                        <Setter TargetName="ItemBorder" Property="BorderBrush" Value="Transparent" />
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </ListBox.ItemContainerStyle>
+                                                    <!--  触发器：处理选中、悬停状态  -->
+                                                    <ControlTemplate.Triggers>
+                                                        <!--  鼠标悬停  -->
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#374151" />
+                                                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#4B5563" />
+                                                            <Setter Property="Foreground" Value="#E5E7EB" />
+                                                        </Trigger>
 
-                            <!--  列表项之间的分隔线  -->
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <ContentPresenter Content="{Binding}" />
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                                                        <!--  选中状态  -->
+                                                        <Trigger Property="IsSelected" Value="True">
+                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#165DFF" />
+                                                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#165DFF" />
+                                                            <Setter TargetName="SelectionIndicator" Property="Opacity" Value="1" />
+                                                            <Setter Property="Foreground" Value="White" />
+                                                        </Trigger>
+
+                                                        <!--  焦点状态  -->
+                                                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#165DFF" />
+                                                            <Setter TargetName="ItemBorder" Property="BorderThickness" Value="2" />
+                                                        </Trigger>
+
+                                                        <!--  禁用状态  -->
+                                                        <Trigger Property="IsEnabled" Value="False">
+                                                            <Setter Property="Foreground" Value="#6B7280" />
+                                                            <Setter TargetName="ItemBorder" Property="Background" Value="Transparent" />
+                                                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="Transparent" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+
+                                <!--  列表项之间的分隔线  -->
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <ContentPresenter Content="{Binding}" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Border
+                                Grid.Row="1"
+                                Padding="10,4"
+                                Background="#1F2937"
+                                BorderBrush="#374151"
+                                BorderThickness="1,1,1,0"
+                                CornerRadius="4">
+
+                                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                    <TextBlock
+                                        Margin="0,0,6,0"
+                                        FontSize="12"
+                                        Foreground="#36CFC9"
+                                        Text="日志：" />
+
+                                    <TextBlock
+                                        Width="180"
+                                        FontSize="12"
+                                        Foreground="#E5E7EB"
+                                        Text="{Binding LatestLog}" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                     </Border>
                     <ContentControl Grid.Column="1" prism:RegionManager.RegionName="MainContentRegion" />
                 </Grid>

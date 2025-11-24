@@ -97,7 +97,9 @@ namespace DualModeMonitorSystem.ViewModels
         /// </summary>
         public ObservableCollection<HumitureDevices> Devices { get; set; } = new ObservableCollection<HumitureDevices>();
 
-        public DelegateCommand TestConnectionCommand { get; set; }
+        public DelegateCommand SaveModbusConfigCommand { get; private set; }
+        public DelegateCommand TestConnectionCommand { get; private set; }
+        public DelegateCommand TestReadCommand { get; private set; }
         public DelegateCommand AddRegisterMappingCommand { get; private set; }
         public DeviceConfigViewModel(IDeviceService deviceService,IDialogService dialogService,IModbusService modbusService)
         {
@@ -106,6 +108,60 @@ namespace DualModeMonitorSystem.ViewModels
             this.modbusService = modbusService;
             AddRegisterMappingCommand = new DelegateCommand(AddRegisterMapping);
             TestConnectionCommand = new DelegateCommand(TestConnection);
+            SaveModbusConfigCommand = new DelegateCommand(SaveModbusConfig);
+            TestReadCommand = new DelegateCommand(TestRead);
+        }
+
+        private async void SaveModbusConfig()
+        {
+            if (SelectedDataPoint == null)
+            {
+                dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", "请先选择要保存的数据点！" } });
+                return;
+            }
+
+            try
+            {
+                // 把当前编辑的 ModbusConfig 赋回到数据点
+                SelectedDataPoint.ModbusConfig = ModbusConfig;
+
+                var response = await deviceService.UpdateDataPointAsync(SelectedDataPoint);
+
+                if (response != null && response.Success)
+                {
+                    var updated = response.Data ?? SelectedDataPoint;
+
+                    // 更新本地 DataPoints 集合
+                    var existing = DataPoints.FirstOrDefault(dp => dp.Id == updated.Id);
+                    if (existing != null)
+                    {
+                        var idx = DataPoints.IndexOf(existing);
+                        DataPoints[idx] = updated;
+                    }
+
+                    // 更新 RegisterMappings 显示内容
+                    var mapping = RegisterMappings.FirstOrDefault(r => r.DataPointId == updated.Id);
+                    if (mapping != null && updated.ModbusConfig != null)
+                    {
+                        mapping.Address = updated.ModbusConfig.RegisterStart;
+                        mapping.Format = updated.ModbusConfig.DataFormat;
+                        mapping.Factor = updated.ModbusConfig.DataMultiplier;
+                        mapping.Offset = updated.ModbusConfig.Offset;
+                        mapping.IsEnabled = updated.EnableAlarm;
+                    }
+
+                    dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", "保存Modbus配置成功！" } });
+                }
+                else
+                {
+                    var msg = response?.Message ?? "保存Modbus配置失败，请重试。";
+                    dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", msg } });
+                }
+            }
+            catch (Exception ex)
+            {
+                dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", $"保存失败: {ex.Message}" } });
+            }
         }
 
         private async void TestConnection()
@@ -116,7 +172,7 @@ namespace DualModeMonitorSystem.ViewModels
             }
             else
             {
-                bool isSuccess = await modbusService.ConnectAsync(SelectDevice.SerialPortConfig);
+                bool isSuccess =  await modbusService.ConnectAsync(SelectDevice.SerialPortConfig);
                 if (isSuccess)
                 {
                     dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", "连接成功！" } });
@@ -126,7 +182,6 @@ namespace DualModeMonitorSystem.ViewModels
                     dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", "连接失败，请检查配置！" } });
                 }
             }
-            
         }
 
         private void AddRegisterMapping()
@@ -156,6 +211,41 @@ namespace DualModeMonitorSystem.ViewModels
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             LoadDevices();
+        }
+
+        private async void TestRead()
+        {
+            try
+            {
+                // Ensure connection
+                if (!modbusService.IsConnected)
+                {
+                    var ok = await modbusService.ConnectAsync(SelectDevice?.SerialPortConfig);
+                    if (!ok)
+                    {
+                        dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", "连接设备失败，无法读取" } });
+                        return;
+                    }
+                }
+
+                var cfg = SelectedDataPoint.ModbusConfig;
+                ushort start = cfg.RegisterStart;
+                int regCount = Math.Max(1, cfg.RegisterLength / 2);
+                var regs = await modbusService.ReadHoldingRegistersAsync(start, (ushort)regCount);
+                if (regs == null || regs.Length == 0)
+                {
+                    dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", "未收到响应" } });
+                    return;
+                }
+                else
+                {
+                    dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", $"读取结果: {regs.FirstOrDefault()}" } });
+                }
+            }
+            catch (Exception ex)
+            {
+                dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", $"读取失败: {ex.Message}" } });
+            }
         }
     }
 }
