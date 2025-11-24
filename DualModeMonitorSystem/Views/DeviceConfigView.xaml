@@ -87,65 +87,67 @@
 
 
                 <!--  设备列表  -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <ListBox
+                <Border 
+                    Grid.Row="1">
+                    
+                <ListBox
                         Margin="10"
                         ItemsSource="{Binding Devices}"
                         SelectedItem="{Binding SelectDevice}">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <md:Card
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <md:Card
                                     Margin="0,0,0,10"
                                     Padding="15"
                                     Background="{Binding IsSelected}"
                                     Foreground="White">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
 
-                                        <!--  设备信息  -->
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock
+                                    <!--  设备信息  -->
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock
                                                 FontSize="14"
                                                 FontWeight="SemiBold"
                                                 Text="{Binding Name}" />
-                                            <TextBlock
+                                        <TextBlock
                                                 Margin="0,2,0,0"
                                                 FontSize="11"
                                                 Foreground="#9CA3AF"
                                                 Text="{Binding Location}" />
-                                            <TextBlock
+                                        <TextBlock
                                                 FontSize="11"
                                                 Foreground="#9CA3AF"
                                                 Text="{Binding DeviceCode}" />
-                                        </StackPanel>
+                                    </StackPanel>
 
-                                        <!--  状态指示  -->
-                                        <StackPanel
+                                    <!--  状态指示  -->
+                                    <StackPanel
                                             Grid.Column="1"
                                             Margin="30,0"
                                             HorizontalAlignment="Right"
                                             VerticalAlignment="Center">
-                                            <Border
+                                        <Border
                                                 Width="8"
                                                 Height="8"
                                                 Margin="0,0,0,2"
                                                 Background="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
                                                 CornerRadius="4" />
-                                            <TextBlock
+                                        <TextBlock
                                                 FontSize="10"
                                                 Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
                                                 Text="{Binding Status}" />
-                                        </StackPanel>
-                                    </Grid>
-                                </md:Card>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </ScrollViewer>
+                                    </StackPanel>
+                                </Grid>
+                            </md:Card>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
+                </Border>
                 <!--  添加设备按钮  -->
                 <Button
                     Grid.Row="2"
@@ -280,11 +282,13 @@
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <md:PackIcon
+                                
+                                Foreground="White" 
                                 Width="18"
                                 Height="18"
                                 Margin="0,0,8,0"
                                 Kind="Usb" />
-                            <TextBlock Text="串口配置" />
+                            <TextBlock Text="串口配置" Foreground="White" />
                         </StackPanel>
                     </TabItem.Header>
 
@@ -551,8 +555,9 @@
                                 Width="18"
                                 Height="18"
                                 Margin="0,0,8,0"
+                                Foreground="White"  
                                 Kind="SwapHorizontal" />
-                            <TextBlock Text="Modbus配置" />
+                            <TextBlock Text="Modbus配置" Foreground="White"/>
                         </StackPanel>
                     </TabItem.Header>
 

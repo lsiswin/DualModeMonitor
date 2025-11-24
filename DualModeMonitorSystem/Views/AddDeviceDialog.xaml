@@ -1,0 +1,263 @@
+﻿<UserControl
+    x:Class="DualModeMonitorSystem.Views.AddDeviceDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:convert="clr-namespace:DualModeMonitorSystem.Convert"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:enums="clr-namespace:MonitorLibrary.Models.Enums;assembly=MonitorLibrary"
+    xmlns:local="clr-namespace:DualModeMonitorSystem"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:sysPorts="clr-namespace:System.IO.Ports;assembly=System"
+    Width="750"
+    d:DesignHeight="500"
+    d:DesignWidth="750"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <convert:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+    </UserControl.Resources>
+
+    <md:Card Background="#272E3B" UniformCornerRadius="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border
+                Grid.Row="0"
+                Padding="20"
+                BorderBrush="#374151"
+                BorderThickness="0,0,0,1">
+                <StackPanel Orientation="Horizontal">
+                    <md:PackIcon
+                        Width="24"
+                        Height="24"
+                        VerticalAlignment="Center"
+                        Foreground="#165DFF"
+                        Kind="RouterWireless" />
+                    <TextBlock
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        FontWeight="Bold"
+                        Foreground="White"
+                        Text="添加新设备" />
+                </StackPanel>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="20">
+                <Grid.Resources>
+                    <Style BasedOn="{StaticResource MaterialDesignOutlinedTextBox}" TargetType="TextBox">
+                        <Setter Property="Margin" Value="0,0,0,15" />
+                        <Setter Property="Foreground" Value="White" />
+                        <Setter Property="Background" Value="#1D2129" />
+                        <Setter Property="BorderBrush" Value="#4B5563" />
+                        <Setter Property="md:HintAssist.Foreground" Value="#9CA3AF" />
+                        <Setter Property="md:TextFieldAssist.HasClearButton" Value="True" />
+                    </Style>
+                    <Style BasedOn="{StaticResource MaterialDesignOutlinedComboBox}" TargetType="ComboBox">
+                        <Setter Property="Margin" Value="0,0,0,15" />
+                        <Setter Property="Foreground" Value="White" />
+                        <Setter Property="Background" Value="#1D2129" />
+                        <Setter Property="BorderBrush" Value="#4B5563" />
+                        <Setter Property="md:HintAssist.Foreground" Value="#9CA3AF" />
+                        <Setter Property="Height" Value="42" />
+                        <Setter Property="Padding" Value="10" />
+                    </Style>
+                </Grid.Resources>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="30" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock
+                        Margin="0,0,0,15"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Foreground="#36CFC9"
+                        Text="基本信息" />
+
+                    <TextBox
+                        md:HintAssist.Hint="设备名称 (必填)"
+                        MaxLength="50"
+                        Text="{Binding CurrentDevice.Name, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
+
+                    <TextBox
+                        md:HintAssist.Hint="设备编号 (必填, 唯一)"
+                        MaxLength="20"
+                        Text="{Binding CurrentDevice.DeviceCode, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
+
+                    <TextBox
+                        md:HintAssist.Hint="安装位置 (例如: A区-发酵车间)"
+                        MaxLength="100"
+                        Text="{Binding CurrentDevice.Location, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBox
+                        Height="86"
+                        VerticalContentAlignment="Top"
+                        AcceptsReturn="True"
+                        md:HintAssist.Hint="备注信息"
+                        Text="{Binding CurrentDevice.Remark, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <Border
+                    Grid.Column="1"
+                    Width="1"
+                    Margin="0,10"
+                    HorizontalAlignment="Center"
+                    Background="#374151" />
+
+                <StackPanel Grid.Column="2">
+                    <StackPanel Margin="0,0,0,15" Orientation="Horizontal">
+                        <md:PackIcon
+                            Width="16"
+                            Height="16"
+                            Margin="0,0,8,0"
+                            VerticalAlignment="Center"
+                            Foreground="#165DFF"
+                            Kind="SerialPort" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="#165DFF"
+                            Text="串口通信配置" />
+                    </StackPanel>
+
+                    <TextBox
+                        md:HintAssist.Hint="端口号 (例如: COM1)"
+                        Text="{Binding CurrentDevice.SerialPortConfig.PortName, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <ComboBox
+                            Grid.Column="0"
+                            md:HintAssist.Hint="波特率"
+                            ItemsSource="{local:EnumBindingSource EnumType=enums:BaudRate}"
+                            SelectedItem="{Binding CurrentDevice.SerialPortConfig.BaudRate}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                            <ComboBox.Resources>
+                                <SolidColorBrush x:Key="MaterialDesignPaper" Color="#272E3B" />
+                            </ComboBox.Resources>
+                        </ComboBox>
+
+                        <ComboBox
+                            Grid.Column="2"
+                            md:HintAssist.Hint="数据位"
+                            ItemsSource="{local:EnumBindingSource EnumType=enums:DataBits}"
+                            SelectedItem="{Binding CurrentDevice.SerialPortConfig.DataBits}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                            <ComboBox.Resources>
+                                <SolidColorBrush x:Key="MaterialDesignPaper" Color="#272E3B" />
+                            </ComboBox.Resources>
+                        </ComboBox>
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <ComboBox
+                            Grid.Column="0"
+                            md:HintAssist.Hint="停止位"
+                            ItemsSource="{local:EnumBindingSource EnumType=sysPorts:StopBits}"
+                            SelectedItem="{Binding CurrentDevice.SerialPortConfig.StopBits}">
+                            <ComboBox.Resources>
+                                <SolidColorBrush x:Key="MaterialDesignPaper" Color="#272E3B" />
+                            </ComboBox.Resources>
+                        </ComboBox>
+
+                        <ComboBox
+                            Grid.Column="2"
+                            md:HintAssist.Hint="校验位"
+                            ItemsSource="{local:EnumBindingSource EnumType=sysPorts:Parity}"
+                            SelectedItem="{Binding CurrentDevice.SerialPortConfig.Parity}">
+                            <ComboBox.Resources>
+                                <SolidColorBrush x:Key="MaterialDesignPaper" Color="#272E3B" />
+                            </ComboBox.Resources>
+                        </ComboBox>
+                    </Grid>
+
+                    <Grid Margin="0,5,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Foreground="#9CA3AF"
+                            Text="读取超时 (ms):" />
+                        <md:NumericUpDown
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            Background="#1D2129"
+                            BorderBrush="#4B5563"
+                            Foreground="White"
+                            Maximum="10000"
+                            Minimum="100"
+                            Style="{StaticResource MaterialDesignOutlinedNumericUpDown}"
+                            Value="{Binding CurrentDevice.SerialPortConfig.Timeout}" />
+                    </Grid>
+
+                </StackPanel>
+            </Grid>
+
+            <StackPanel
+                Grid.Row="2"
+                Margin="20"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+
+                <Button
+                    Margin="0,0,10,0"
+                    Background="Transparent"
+                    BorderBrush="#4B5563"
+                    BorderThickness="1"
+                    Command="{Binding ConfirmCommand}"
+                    Content="取消"
+                    Foreground="#9CA3AF"
+                    Style="{StaticResource MaterialDesignFlatButton}">
+                    <Button.CommandParameter>
+                        <sys:Boolean>False</sys:Boolean>
+                    </Button.CommandParameter>
+                </Button>
+
+                <Button
+                    Background="#165DFF"
+                    BorderThickness="0"
+                    Command="{Binding CancelCommand}"
+                    Content="确定添加"
+                    Foreground="White"
+                    Style="{StaticResource MaterialDesignRaisedButton}">
+                    <Button.CommandParameter>
+                        <sys:Boolean>True</sys:Boolean>
+                    </Button.CommandParameter>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </md:Card>
+</UserControl>

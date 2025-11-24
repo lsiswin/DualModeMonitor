@@ -441,28 +441,25 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <Border
-                                Grid.Row="1"
-                                Padding="10,4"
+                            <materialDesign:Card
+                                Margin="3"
+                                Grid.Row="1"                                
                                 Background="#1F2937"
-                                BorderBrush="#374151"
-                                BorderThickness="1,1,1,0"
-                                CornerRadius="4">
-
+                                UniformCornerRadius="2">
                                 <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                     <TextBlock
-                                        Margin="0,0,6,0"
-                                        FontSize="12"
-                                        Foreground="#36CFC9"
-                                        Text="日志：" />
+                            Margin="5,0,3,0"
+                            FontSize="12"
+                            Foreground="#36CFC9"
+                            Text="日志：" />
 
                                     <TextBlock
-                                        Width="180"
-                                        FontSize="12"
-                                        Foreground="#E5E7EB"
-                                        Text="{Binding LatestLog}" />
+                            Width="180"
+                            FontSize="12"
+                            Foreground="#E5E7EB"
+                            Text="{Binding LatestLog}" />
                                 </StackPanel>
-                            </Border>
+                            </materialDesign:Card>
                         </Grid>
                     </Border>
                     <ContentControl Grid.Column="1" prism:RegionManager.RegionName="MainContentRegion" />

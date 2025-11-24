@@ -101,12 +101,14 @@ namespace DualModeMonitorSystem.ViewModels
         public DelegateCommand TestConnectionCommand { get; private set; }
         public DelegateCommand TestReadCommand { get; private set; }
         public DelegateCommand AddRegisterMappingCommand { get; private set; }
+        public DelegateCommand AddDeviceCommand { get; private set; }
         public DeviceConfigViewModel(IDeviceService deviceService,IDialogService dialogService,IModbusService modbusService)
         {
             this.deviceService = deviceService;
             this.dialogService = dialogService;
             this.modbusService = modbusService;
             AddRegisterMappingCommand = new DelegateCommand(AddRegisterMapping);
+            AddDeviceCommand = new DelegateCommand(ExecuteAddDevice);
             TestConnectionCommand = new DelegateCommand(TestConnection);
             SaveModbusConfigCommand = new DelegateCommand(SaveModbusConfig);
             TestReadCommand = new DelegateCommand(TestRead);
@@ -192,7 +194,37 @@ namespace DualModeMonitorSystem.ViewModels
             });
         }
 
+        private async void ExecuteAddDevice()
+        {
+            dialogService.ShowDialog("AddDeviceDialog", (result) =>
+            {
+                if (result != null && result.Parameters != null && result.Parameters.ContainsKey("device"))
+                {
+                    var device = result.Parameters.GetValue<HumitureDevices>("device");
+                    // 异步创建设备并刷新列表
+                    _ = Task.Run(async () =>
+                    {
+                        var resp = await deviceService.CreateDeviceAsync(device);
+                        if (resp != null && resp.Success)
+                        {
+                            // UI 线程更新
+                            App.Current.Dispatcher.Invoke(async () =>
+                            {
+                                Devices.Add(resp.Data);
+                                dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", "添加设备成功" } });
+                            });
+                        }
+                        else
+                        {
+                            App.Current.Dispatcher.Invoke(() => dialogService.ShowDialog("MessageDialog", new DialogParameters { { "message", resp?.Message ?? "添加失败" } }));
+                        }
+                    });
+                }
+            });
+        }
+
         private async void LoadDevices() {
+            Devices.Clear();
             var result = await deviceService.GetAllDevicesAsync();
             Devices.AddRange(result.Data);            
         }

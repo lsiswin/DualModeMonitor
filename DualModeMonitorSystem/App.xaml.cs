@@ -49,6 +49,7 @@ namespace DualModeMonitorSystem
             container.Register<IDialogWindow, CustomDialogWindow>();
             container.RegisterDialog<AddRegisterMappingDialog, AddRegisterMappingDialogViewModel>("AddRegisterMappingDialog");
             container.RegisterDialog<MessageDialog, MessageDialogViewModel>("MessageDialog");
+            container.RegisterDialog<AddDeviceDialog, AddDeviceDialogViewModel>("AddDeviceDialog");
 
             // 注册HttpService，通常注册为单例，因为HttpClient最好复用
             container.RegisterSingleton<IHttpService, HttpService>();
