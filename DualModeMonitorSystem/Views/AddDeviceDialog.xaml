@@ -230,32 +230,25 @@
                 Grid.Row="2"
                 Margin="20"
                 HorizontalAlignment="Right"
-                Orientation="Horizontal">
-
+                Orientation="Horizontal">                
                 <Button
                     Margin="0,0,10,0"
                     Background="Transparent"
                     BorderBrush="#4B5563"
                     BorderThickness="1"
-                    Command="{Binding ConfirmCommand}"
+                    Command="{Binding CancelCommand}"
                     Content="取消"
                     Foreground="#9CA3AF"
-                    Style="{StaticResource MaterialDesignFlatButton}">
-                    <Button.CommandParameter>
-                        <sys:Boolean>False</sys:Boolean>
-                    </Button.CommandParameter>
+                    Style="{StaticResource MaterialDesignFlatButton}">                    
                 </Button>
 
                 <Button
                     Background="#165DFF"
                     BorderThickness="0"
-                    Command="{Binding CancelCommand}"
+                    Command="{Binding ConfirmCommand}"
                     Content="确定添加"
                     Foreground="White"
-                    Style="{StaticResource MaterialDesignRaisedButton}">
-                    <Button.CommandParameter>
-                        <sys:Boolean>True</sys:Boolean>
-                    </Button.CommandParameter>
+                    Style="{StaticResource MaterialDesignRaisedButton}">                    
                 </Button>
             </StackPanel>
         </Grid>

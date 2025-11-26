@@ -50,7 +50,7 @@
                 </StackPanel>
             </Border>
 
-            <StackPanel Grid.Row="1" Margin="25,20">
+            <StackPanel Grid.Row="1" Margin="20">
                 <StackPanel.Resources>
                     <Style BasedOn="{StaticResource MaterialDesignOutlinedTextBox}" TargetType="TextBox">
                         <Setter Property="Margin" Value="0,0,0,15" />
@@ -71,6 +71,7 @@
                 </StackPanel.Resources>
 
                 <TextBox
+                    Margin="0,5,0,15"
                     materialDesign:HintAssist.Hint="数据类型 (如: 温度)"
                     Text="{Binding DataType, UpdateSourceTrigger=PropertyChanged}" />
 
@@ -118,7 +119,7 @@
 
             <StackPanel
                 Grid.Row="2"
-                Margin="20"
+                Margin="0,0,25,6"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal">
                 <Button

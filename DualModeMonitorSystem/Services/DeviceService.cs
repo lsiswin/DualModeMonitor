@@ -18,7 +18,7 @@ namespace DualModeMonitorSystem.Services
         }
         public async Task<ApiResponse<HumitureDevices>> CreateDeviceAsync(HumitureDevices device)
         {
-            return await _httpService.PutAsync < ApiResponse<HumitureDevices>>("/api/devices", device);
+            return await _httpService.PostAsync <ApiResponse<HumitureDevices>>("/api/devices", device);
         }
 
         public async Task<bool> DeleteDeviceAsync(int id)
@@ -43,7 +43,7 @@ namespace DualModeMonitorSystem.Services
 
         public async Task<ApiResponse<HumitureDevices>> UpdateDeviceAsync(HumitureDevices device)
         {
-            return await _httpService.PostAsync<ApiResponse<HumitureDevices>>($"/api/devices/{device.Id}", device);
+            return await _httpService.PutAsync<ApiResponse<HumitureDevices>>($"/api/devices/{device.Id}", device);
         }
 
         public async Task<ApiResponse<List<DataPoint>>> GetDataPointByDevice(int id)
