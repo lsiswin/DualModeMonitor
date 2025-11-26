@@ -727,7 +727,7 @@
                                                 Maximum="125"
                                                 Minimum="1"
                                                 Style="{StaticResource MaterialDesignOutlinedNumericUpDown}"
-                                                Value="{Binding ModbusConfig.RegisterLength}" />
+                                                Value="{Binding ModbusConfig.RegisterLength,Mode=OneWay}" />
                                         </StackPanel>
                                     </UniformGrid>
 
@@ -919,29 +919,45 @@
                                                     Binding="{Binding Format}"
                                                     Header="数据格式" />
                                                 <DataGridTextColumn
-                                                    Width="*"
-                                                    Binding="{Binding Unit}"
-                                                    Header="单位" />
-                                                <DataGridTextColumn
-                                                    Width="*"
-                                                    Binding="{Binding Factor}"
-                                                    Header="系数" />
-                                                <DataGridTextColumn
-                                                    Width="*"
-                                                    Binding="{Binding Offset}"
-                                                    Header="偏移量" />
+                                                    Width="0.8*"
+                                                    Binding="{Binding CollectInterval}"
+                                                    Header="间隔" />
 
-                                                <DataGridTemplateColumn Width="*" Header="状态">
+                                                <DataGridTemplateColumn Width="1.2*" Header="告警阈值 (上下限)">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Center">
+                                                                <md:PackIcon Kind="ArrowUp" Width="12" Height="12" Foreground="#FF4D4F" VerticalAlignment="Center" />
+                                                                <TextBlock Margin="2,0,5,0" Text="{Binding UpperLimit}" />
+                                                                <md:PackIcon Kind="ArrowDown" Width="12" Height="12" Foreground="#49CC51" VerticalAlignment="Center" />
+                                                                <TextBlock Margin="2,0,0,0" Text="{Binding LowerLimit}" />
+                                                                <TextBlock Margin="2,0,0,0" FontSize="10" Foreground="#9CA3AF" Text="{Binding Unit}" />
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+
+                                                <DataGridTemplateColumn Width="0.8*" Header="启用告警">
                                                     <DataGridTemplateColumn.CellTemplate>
                                                         <DataTemplate>
                                                             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                                                <Border
-                                                                    Width="12"
-                                                                    Height="12"
-                                                                    Margin="0,0,5,0"
-                                                                    Background="{Binding IsEnabled}"
-                                                                    CornerRadius="6" />
-                                                                <TextBlock VerticalAlignment="Center" Text="{Binding IsEnabled}" />
+                                                                <Ellipse 
+                            Width="10" 
+                            Height="10" 
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center">
+                                                                    <Ellipse.Style>
+                                                                        <Style TargetType="Ellipse">
+                                                                            <Setter Property="Fill" Value="#FF4D4F" />
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding EnableAlarm}" Value="True">
+                                                                                    <Setter Property="Fill" Value="#49CC51" />
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </Ellipse.Style>
+                                                                </Ellipse>
+                                                                <TextBlock VerticalAlignment="Center" Text="{Binding EnableAlarm}" />
                                                             </StackPanel>
                                                         </DataTemplate>
                                                     </DataGridTemplateColumn.CellTemplate>

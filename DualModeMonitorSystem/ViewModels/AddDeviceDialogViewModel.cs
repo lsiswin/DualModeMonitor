@@ -70,10 +70,6 @@ namespace DualModeMonitorSystem.ViewModels
             if (CurrentDevice != null)
             {
                 CurrentDevice.PropertyChanged -= OnDevicePropertyChanged;
-                if (CurrentDevice.SerialPortConfig != null)
-                {
-                    CurrentDevice.SerialPortConfig.PropertyChanged -= OnDevicePropertyChanged;
-                }
             }
         }
 

@@ -14,10 +14,14 @@ namespace DualModeMonitorSystem.Services
         Task<ApiResponse<HumitureDevices>>GetDeviceByIdAsync(int id);
         Task<ApiResponse<HumitureDevices>> CreateDeviceAsync(HumitureDevices device);
         Task<ApiResponse<HumitureDevices>> UpdateDeviceAsync(HumitureDevices device);
-        Task<bool> DeleteDeviceAsync(int id);
+        Task<ApiResponse<bool>> DeleteDeviceAsync(int id);
         Task<List<DeviceStatus>> GetDeviceStatusAsync();
 
         Task<ApiResponse<List<DataPoint>>> GetDataPointByDevice(int id);
         Task<ApiResponse<DataPoint>> UpdateDataPointAsync(DataPoint dataPoint);
+
+        //删除数据点
+        Task<ApiResponse<bool>> DeleteDataPointAsync(int id);
+        Task<ApiResponse<DataPoint>> CreateDataPointAsync(DataPoint newDataPoint);
     }
 }

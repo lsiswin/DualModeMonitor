@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MonitorLibrary.Models;
 using MonitorLibrary.Models.Enums;
+using Prism.Commands;
+using Prism.Mvvm;
 
 namespace DualModeMonitorSystem.ViewModels
 {
@@ -16,55 +20,29 @@ namespace DualModeMonitorSystem.ViewModels
             set { SetProperty(ref _title, value); }
         }
 
+        // --- 数据点基本信息 ---
+        private DataPoint _currentDataPoint;
 
-        // --- 输入属性 ---
-        private string _dataType;
-        public string DataType
+        public DataPoint CurrentDataPoint
         {
-            get { return _dataType; }
-            set { SetProperty(ref _dataType, value); }
+            get { return _currentDataPoint; }
+            set { _currentDataPoint = value;RaisePropertyChanged(); }
         }
 
-        private ushort _address;
-        public ushort Address
-        {
-            get { return _address; }
-            set { SetProperty(ref _address, value); }
-        }
 
-        private ModbusDataFormat _format;
-        public ModbusDataFormat Format
-        {
-            get { return _format; }
-            set { SetProperty(ref _format, value); }
-        }
 
-        private string _unit;
-        public string Unit
+        // --- 验证错误信息 ---
+        private string _errorMessage;
+        public string ErrorMessage
         {
-            get { return _unit; }
-            set { SetProperty(ref _unit, value); }
+            get { return _errorMessage; }
+            set { SetProperty(ref _errorMessage, value); }
         }
-
-        private decimal _factor = 1.0m; // 默认值
-        public decimal Factor
-        {
-            get { return _factor; }
-            set { SetProperty(ref _factor, value); }
-        }
-
-        private decimal _offset = 0.0m; // 默认值
-        public decimal Offset
-        {
-            get { return _offset; }
-            set { SetProperty(ref _offset, value); }
-        }
-
 
         // --- Commands ---
         private DelegateCommand _confirmCommand;
         public DelegateCommand ConfirmCommand =>
-            _confirmCommand ?? (_confirmCommand = new DelegateCommand(OnConfirm));
+            _confirmCommand ??= new DelegateCommand(OnConfirm, CanConfirm);
 
         private DelegateCommand _cancelCommand;
         public DelegateCommand CancelCommand =>
@@ -72,10 +50,14 @@ namespace DualModeMonitorSystem.ViewModels
 
         public DialogCloseListener RequestClose { get; }
 
+        public AddRegisterMappingDialogViewModel()
+        {
+        }
+
         // --- IDialogAware 实现 ---
         public bool CanCloseDialog()
         {
-            return true; // 可以根据业务逻辑决定是否允许关闭
+            return true;
         }
 
         public void OnDialogClosed()
@@ -85,33 +67,88 @@ namespace DualModeMonitorSystem.ViewModels
 
         public void OnDialogOpened(IDialogParameters parameters)
         {
-            // 可以在这里接收从打开对话框时传递过来的参数
-            // 例如: var deviceId = parameters.GetValue<int>("deviceId");
+            // 编辑模式
+            if (parameters.ContainsKey("IsEdit") && parameters.GetValue<bool>("IsEdit"))
+            {
+                Title = "编辑寄存器映射";
+                if(parameters.ContainsKey("DataPoint"))
+                CurrentDataPoint = parameters.GetValue<DataPoint>("DataPoint");
+            }
+            else
+            {
+                CurrentDataPoint = new DataPoint();
+                if (CurrentDataPoint.ModbusConfig == null)
+                {
+                    CurrentDataPoint.ModbusConfig = new ModbusConfig();
+                }
+                CurrentDataPoint.PropertyChanged += OnDataPointPropertyChanged;
+            }
+
         }
 
+        private void OnDataPointPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            ConfirmCommand.RaiseCanExecuteChanged();
+            ValidateInput();
+        }
 
+        // --- 验证方法 ---
+        private bool CanConfirm()
+        {
+            if (CurrentDataPoint == null) return false;
+            if(CurrentDataPoint.ModbusConfig ==null ) return false;
+            bool isValid = ValidateInput();
+            return isValid;
+        }
+
+        private bool ValidateInput()
+        {
+            ErrorMessage = string.Empty;
+
+            
+
+            if (CurrentDataPoint.ModbusConfig.DeviceAddress < 1 || CurrentDataPoint.ModbusConfig.DeviceAddress > 247)
+            {
+                ErrorMessage = "从站地址必须在 1-247 之间";
+                return false;
+            }
+
+            if (CurrentDataPoint.ModbusConfig.RegisterStart > 65535)
+            {
+                ErrorMessage = "寄存器地址超出范围 (0-65535)";
+                return false;
+            }
+
+
+            if (CurrentDataPoint.ModbusConfig.DataMultiplier == 0)
+            {
+                ErrorMessage = "系数不能为零";
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(CurrentDataPoint.Unit) && CurrentDataPoint.Unit.Length > 20)
+            {
+                ErrorMessage = "单位字符不能超过20个字符";
+                return false;
+            }
+
+            return true;
+        }
+
+       
+        
+
+        
         // --- 方法 ---
         private void OnConfirm()
         {
-            if (string.IsNullOrWhiteSpace(DataType))
+            if (!ValidateInput())
             {
-                // 这里可以加入更详细的验证逻辑和提示
-                // 例如使用 Prism 的 IMessageBoxService 或者自定义提示
-                // MessageBox.Show("数据类型不能为空");
-                // return;
+                return;
             }
-
             var resultParams = new DialogParameters();
-            resultParams.Add("DataType", DataType);
-            resultParams.Add("Address", Address);
-            resultParams.Add("Format", Format);
-            resultParams.Add("Unit", Unit);
-            resultParams.Add("Factor", Factor);
-            resultParams.Add("Offset", Offset);
-            RequestClose.Invoke(new DialogResult(ButtonResult.OK)
-            {
-                Parameters = resultParams
-            });
+            resultParams.Add("DataPoint", CurrentDataPoint);
+            RequestClose.Invoke(new DialogResult(ButtonResult.OK) { Parameters = resultParams });
         }
 
         private void OnCancel()

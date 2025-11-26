@@ -20,10 +20,10 @@ namespace DualModeMonitorSystem.Services
             _httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
         }
-        public async Task<bool> DeleteAsync(string endpoint)
+        public async Task<T> DeleteAsync<T>(string endpoint)
         {
             var response = await _httpClient.DeleteAsync(GetFullUrl(endpoint));
-            return response.IsSuccessStatusCode;
+            return await HandleResponse<T>(response);
         }
 
         public async Task<T> GetAsync<T>(string endpoint)

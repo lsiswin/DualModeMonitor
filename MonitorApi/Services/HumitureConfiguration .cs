@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MonitorLibrary.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Emit;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace MonitorApi.Services
 {
@@ -50,10 +51,10 @@ namespace MonitorApi.Services
 
             // 关系配置：数据点 -> 传感器（多对一）
             builder.HasOne(dp => dp.HumitureDevices)
-                   .WithMany()
+                   .WithMany(hd => hd.DataPoints)  // 指定反向导航属性
                    .HasForeignKey(dp => dp.DeviceId)
-                   .OnDelete(DeleteBehavior.Cascade);
-
+                   .OnDelete(DeleteBehavior.Cascade)
+                   .IsRequired();  // 明确指定外键是必需的
 
             // 关系配置：数据点 -> 记录（一对多）
             builder.HasMany(dp => dp.Records)
@@ -103,11 +104,6 @@ namespace MonitorApi.Services
                    .HasConversion<string>()
                    .IsRequired(); // 补充必填约束，确保字节序有值
 
-            // 寄存器长度约束（合理范围：1-125字节，符合Modbus协议规范）
-            builder.Property(mc => mc.RegisterLength)
-                   .IsRequired()
-                   .HasDefaultValue(4)
-                   .HasMaxLength(125);
 
             // 数据倍率约束（避免极端值）
             builder.Property(mc => mc.DataMultiplier)

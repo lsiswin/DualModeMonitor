@@ -37,10 +37,10 @@ namespace MonitorApi.Controllers
         /// <returns></returns>
 
         [HttpPost]
-        public ActionResult<DataPoint> CreateDataPoint(DataPoint dataPoint)
+        public async Task<ApiResponse<DataPoint>> CreateDataPoint(DataPoint dataPoint)
         {
-            var createdDataPoint = dataPointService.AddAsync(dataPoint);
-            return new OkObjectResult(createdDataPoint);
+            await dataPointService.AddAsync(dataPoint);
+            return ApiResponse<DataPoint>.SuccessResult(dataPoint);
         }
         /// <summary>
         /// 更新数据点
@@ -65,14 +65,14 @@ namespace MonitorApi.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public ActionResult DeleteDataPoint(int id) {
+        public ApiResponse<bool> DeleteDataPoint(int id) {
             var existingDataPoint = dataPointService.GetByIdAsync(id);
             if (existingDataPoint == null)
             {
-                return new NotFoundResult();
+                return ApiResponse<bool>.ErrorResult("找不到对应数据点");
             }
             dataPointService.DeleteAsync(id);
-            return new OkResult();
+            return ApiResponse<bool>.SuccessResult(true, "删除成功");
         }
         /// <summary>
         /// 查询所有数据点

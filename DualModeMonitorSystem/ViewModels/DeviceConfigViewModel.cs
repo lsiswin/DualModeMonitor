@@ -64,12 +64,151 @@ namespace DualModeMonitorSystem.ViewModels
 
         private void DeleteMapping(int id)
         {
-            DataPoints.Remove(DataPoints.FirstOrDefault(dp => dp.Id == id));
+            var dataPoint = DataPoints.FirstOrDefault(dp => dp.Id == id);
+            if (dataPoint == null) return;
+
+            // 可以添加确认对话框
+            dialogService.ShowDialog("ConfirmDialog",
+                new DialogParameters
+                {
+            { "message", $"确定要删除数据点 '{dataPoint.Name}' 及其 Modbus 配置吗？" }
+                },
+                async (confirmResult) =>
+                {
+                    if (confirmResult.Result == ButtonResult.OK)
+                    {
+                        try
+                        {
+                            var response = await deviceService.DeleteDataPointAsync(id);
+
+                            if (response != null && response.Success)
+                            {
+                                App.Current.Dispatcher.Invoke(() =>
+                                {
+                                    // 从集合中移除
+                                    DataPoints.Remove(dataPoint);
+
+                                    var mapping = RegisterMappings.FirstOrDefault(m => m.DataPointId == id);
+                                    if (mapping != null)
+                                    {
+                                        RegisterMappings.Remove(mapping);
+                                    }
+
+                                    dialogService.ShowDialog("MessageDialog",
+                                        new DialogParameters { { "message", "删除成功！" } });
+                                });
+                            }
+                            else
+                            {
+                                var msg = response?.Message ?? "删除失败";
+                                App.Current.Dispatcher.Invoke(() =>
+                                {
+                                    dialogService.ShowDialog("MessageDialog",
+                                        new DialogParameters { { "message", msg } });
+                                });
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                dialogService.ShowDialog("MessageDialog",
+                                    new DialogParameters { { "message", $"删除失败: {ex.Message}" } });
+                            });
+                        }
+                    }
+                });
         }
 
-        private void EditMapping(int id)
+        private void EditMapping(int dataPointId)
         {
-            SelectedDataPoint = DataPoints.FirstOrDefault(dp => dp.Id == id);
+            var dataPoint = DataPoints.FirstOrDefault(dp => dp.Id == dataPointId);
+            if (dataPoint == null || dataPoint.ModbusConfig == null)
+            {
+                dialogService.ShowDialog("MessageDialog",
+                    new DialogParameters { { "message", "未找到数据点或 Modbus 配置！" } });
+                return;
+            }
+
+            var parameters = new DialogParameters
+                {
+                    {  "IsEdit", true  },
+                    { "DataPoint", SelectedDataPoint }
+                };
+
+            dialogService.ShowDialog("AddRegisterMappingDialog", parameters, async (result) =>
+            {
+                if (result.Result == ButtonResult.OK && result.Parameters != null)
+                {
+                    try
+                    {
+                        // 更新数据点信息
+                        dataPoint.Name = result.Parameters.GetValue<string>("DataType");
+                        dataPoint.Unit = result.Parameters.GetValue<string>("Unit");
+
+                        // 更新 Modbus 配置
+                        dataPoint.ModbusConfig.DeviceAddress = result.Parameters.GetValue<byte>("DeviceAddress");
+                        dataPoint.ModbusConfig.FunctionCode = result.Parameters.GetValue<ModbusFunctionCode>("FunctionCode");
+                        dataPoint.ModbusConfig.RegisterStart = result.Parameters.GetValue<ushort>("RegisterStart");
+                        dataPoint.ModbusConfig.DataFormat = result.Parameters.GetValue<ModbusDataFormat>("DataFormat");
+                        dataPoint.ModbusConfig.DataMultiplier = result.Parameters.GetValue<decimal>("DataMultiplier");
+                        dataPoint.ModbusConfig.Offset = result.Parameters.GetValue<decimal>("Offset");
+                        dataPoint.ModbusConfig.Endianness = result.Parameters.GetValue<ModbusByteOrder>("Endianness");
+
+                        // 调用更新服务
+                        var response = await deviceService.UpdateDataPointAsync(dataPoint);
+
+                        if (response != null && response.Success)
+                        {
+                            var updated = response.Data ?? dataPoint;
+
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                // 更新本地集合
+                                var existing = DataPoints.FirstOrDefault(dp => dp.Id == updated.Id);
+                                if (existing != null)
+                                {
+                                    var idx = DataPoints.IndexOf(existing);
+                                    DataPoints[idx] = updated;
+                                }
+
+                                // 更新映射表显示
+                                var mapping = RegisterMappings.FirstOrDefault(r => r.DataPointId == updated.Id);
+                                if (mapping != null)
+                                {
+                                    mapping.DataType = updated.Name;
+                                    mapping.Unit = updated.Unit;
+                                    mapping.Address = updated.ModbusConfig.RegisterStart;
+                                    mapping.Format = updated.ModbusConfig.DataFormat;
+                                    mapping.Factor = updated.ModbusConfig.DataMultiplier;
+                                    mapping.Offset = updated.ModbusConfig.Offset;
+                                    mapping.IsEnabled = updated.EnableAlarm;
+                                }
+
+                                dialogService.ShowDialog("MessageDialog",
+                                    new DialogParameters { { "message", "更新成功！" } });
+                            });
+                        }
+                        else
+                        {
+                            var msg = response?.Message ?? "更新失败，请重试。";
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                dialogService.ShowDialog("MessageDialog",
+                                    new DialogParameters { { "message", msg } });
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        App.Current.Dispatcher.Invoke(() =>
+                        {
+                            dialogService.ShowDialog("MessageDialog",
+                                new DialogParameters { { "message", $"更新失败: {ex.Message}" } });
+                        });
+                    }
+                }
+            });
         }
 
         /// <summary>
@@ -186,11 +325,83 @@ namespace DualModeMonitorSystem.ViewModels
             }
         }
 
-        private void AddRegisterMapping()
+        private async void AddRegisterMapping()
         {
-            dialogService.ShowDialog("AddRegisterMappingDialog", () =>
+            if (SelectDevice == null)
             {
-                // 对话框关闭后的回调，可以刷新数据等操作
+                dialogService.ShowDialog("MessageDialog",
+                    new DialogParameters { { "message", "请先选择设备！" } });
+                return;
+            }
+
+            // 传递当前设备的默认从站地址
+            var dialogParams = new DialogParameters();
+            dialogParams.Add("IsEdit",false);
+            dialogService.ShowDialog("AddRegisterMappingDialog", dialogParams, async (result) =>
+            {
+                if (result.Result == ButtonResult.OK && result.Parameters != null)
+                {
+                    try
+                    {
+
+                        var resDataPoint = result.Parameters.GetValue<DataPoint>("DataPoint");
+                        resDataPoint.DeviceId = SelectDevice.Id;
+                        // 调用服务创建数据点
+                        var response = await deviceService.CreateDataPointAsync(resDataPoint);
+
+                        if (response != null && response.Success)
+                        {
+                            // 获取创建后的数据点（包含服务器生成的 ID）
+                            var createdDataPoint = response.Data ?? resDataPoint;
+
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                // 添加到数据点集合
+                                DataPoints.Add(createdDataPoint);
+
+                                // 创建并添加到映射表
+                                var mapping = new RegisterMapping
+                                {
+                                    DataPointId = createdDataPoint.Id,
+                                    DataType = createdDataPoint.Name,
+                                    Unit = createdDataPoint.Unit,
+                                    Address = createdDataPoint.ModbusConfig.RegisterStart,
+                                    Format = createdDataPoint.ModbusConfig.DataFormat,
+                                    Factor = createdDataPoint.ModbusConfig.DataMultiplier,
+                                    Offset = createdDataPoint.ModbusConfig.Offset,
+                                    IsEnabled = createdDataPoint.EnableAlarm,
+                                    EditCommand = new DelegateCommand(() => EditMapping(createdDataPoint.Id)),
+                                    DeleteCommand = new DelegateCommand(() => DeleteMapping(createdDataPoint.Id))
+                                };
+
+                                RegisterMappings.Add(mapping);
+
+                                dialogService.ShowDialog("MessageDialog",
+                                    new DialogParameters
+                                    {
+                                { "message", $"成功添加寄存器映射：{mapping.DataType}\n地址: 0x{mapping.Address:X4}, 格式: {mapping.Format}" }
+                                    });
+                            });
+                        }
+                        else
+                        {
+                            var errorMsg = response?.Message ?? "添加失败，请重试";
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                dialogService.ShowDialog("MessageDialog",
+                                    new DialogParameters { { "message", $"添加失败：{errorMsg}" } });
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        App.Current.Dispatcher.Invoke(() =>
+                        {
+                            dialogService.ShowDialog("MessageDialog",
+                                new DialogParameters { { "message", $"添加失败: {ex.Message}" } });
+                        });
+                    }
+                }
             });
         }
 
