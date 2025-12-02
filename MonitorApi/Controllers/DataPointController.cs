@@ -15,21 +15,23 @@ namespace MonitorApi.Controllers
         {
             this.dataPointService = dataPointService;
         }
+
         /// <summary>
         /// 根据ID获取数据点
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public ActionResult<DataPoint> GetDataPointById(int id)
+        public async Task<ApiResponse<DataPoint>> GetDataPointById(int id)
         {
-            var dataPoint = dataPointService.GetByIdAsync(id);
+            var dataPoint = await dataPointService.GetByIdAsync(id);
             if (dataPoint == null)
             {
-                return new NotFoundResult();
+                return ApiResponse<DataPoint>.ErrorResult("找不到对应数据点");
             }
-            return new OkObjectResult(dataPoint);
+            return ApiResponse<DataPoint>.SuccessResult(dataPoint);
         }
+
         /// <summary>
         /// 创建数据点
         /// </summary>
@@ -42,6 +44,7 @@ namespace MonitorApi.Controllers
             await dataPointService.AddAsync(dataPoint);
             return ApiResponse<DataPoint>.SuccessResult(dataPoint);
         }
+
         /// <summary>
         /// 更新数据点
         /// </summary>
@@ -49,23 +52,23 @@ namespace MonitorApi.Controllers
         /// <param name="dataPoint"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public ActionResult<DataPoint> UpdateDataPoint(int id, DataPoint dataPoint)
+        public async Task<ApiResponse<DataPoint>> UpdateDataPoint(
+            int id,
+            [FromBody] DataPoint dataPoint
+        )
         {
-            var existingDataPoint = dataPointService.GetByIdAsync(id);
-            if (existingDataPoint == null)
-            {
-                return new NotFoundResult();
-            }
-            var updatedDataPoint = dataPointService.UpdateAsync(dataPoint);
-            return new OkObjectResult(updatedDataPoint);
+            await dataPointService.UpdateAsync(id, dataPoint);
+            return ApiResponse<DataPoint>.SuccessResult(dataPoint);
         }
+
         /// <summary>
         /// 删除数据点
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public ApiResponse<bool> DeleteDataPoint(int id) {
+        public ApiResponse<bool> DeleteDataPoint(int id)
+        {
             var existingDataPoint = dataPointService.GetByIdAsync(id);
             if (existingDataPoint == null)
             {
@@ -74,16 +77,7 @@ namespace MonitorApi.Controllers
             dataPointService.DeleteAsync(id);
             return ApiResponse<bool>.SuccessResult(true, "删除成功");
         }
-        /// <summary>
-        /// 查询所有数据点
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        public ActionResult<IEnumerable<DataPoint>> GetAllDataPoints()
-        {
-            var dataPoints = dataPointService.GetAllAsync();
-            return new OkObjectResult(dataPoints);
-        }
+
         /// <summary>
         /// 根据设备Id查询所有数据点
         /// </summary>

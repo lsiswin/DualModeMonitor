@@ -12,7 +12,7 @@ namespace MonitorLibrary.Models
     /// <summary>
     /// 数据点（传感器的单个参数，如温度、湿度）
     /// </summary>
-    public class DataPoint : BindableBase
+    public class DataPoint : BindableBase, ICloneable
     {
         private int _id;
         private int _deviceId;
@@ -153,7 +153,6 @@ namespace MonitorLibrary.Models
             set { SetProperty(ref _alarmDelay, value); }
         }
 
-
         // 导航属性
         /// <summary>
         /// 关联的传感器
@@ -170,6 +169,9 @@ namespace MonitorLibrary.Models
         /// </summary>
         public ICollection<DataPointRecord> Records { get; set; } = new List<DataPointRecord>();
 
-      
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
     }
 }

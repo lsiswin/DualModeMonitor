@@ -15,11 +15,11 @@ namespace DualModeMonitorSystem
     /// </summary>
     public partial class App : PrismApplication
     {
-
         protected override void OnStartup(StartupEventArgs e)
-        {            
+        {
             base.OnStartup(e);
         }
+
         protected override Window CreateShell()
         {
             var window = Container.Resolve<MainView>();
@@ -38,7 +38,6 @@ namespace DualModeMonitorSystem
 
         protected override void RegisterTypes(IContainerRegistry container)
         {
-
             container.RegisterForNavigation<DashboardView>("DashboardView");
             container.RegisterForNavigation<SettingsView>("SettingsView");
             container.RegisterForNavigation<DeviceConfigView>("DeviceConfigView");
@@ -47,9 +46,12 @@ namespace DualModeMonitorSystem
 
             // 注册自定义对话框窗口
             container.Register<IDialogWindow, CustomDialogWindow>();
-            container.RegisterDialog<AddRegisterMappingDialog, AddRegisterMappingDialogViewModel>("AddRegisterMappingDialog");
+            container.RegisterDialog<AddRegisterMappingDialog, AddRegisterMappingDialogViewModel>(
+                "AddRegisterMappingDialog"
+            );
             container.RegisterDialog<MessageDialog, MessageDialogViewModel>("MessageDialog");
             container.RegisterDialog<AddDeviceDialog, AddDeviceDialogViewModel>("AddDeviceDialog");
+            container.RegisterDialog<ConfirmDialog, ConfirmDialogViewModel>("ConfirmDialog");
 
             // 注册HttpService，通常注册为单例，因为HttpClient最好复用
             container.RegisterSingleton<IHttpService, HttpService>();
@@ -58,5 +60,4 @@ namespace DualModeMonitorSystem
             container.RegisterSingleton<IModbusService, ModbusService>();
         }
     }
-
 }

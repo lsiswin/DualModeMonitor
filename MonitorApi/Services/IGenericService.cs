@@ -11,7 +11,8 @@ namespace MonitorApi.Services
     /// 通用CRUD服务接口
     /// </summary>
     /// <typeparam name="TEntity">实体类型（需继承自BaseEntity）</typeparam>
-    public interface IGenericService<TEntity> where TEntity : class
+    public interface IGenericService<TEntity>
+        where TEntity : class
     {
         /// <summary>
         /// 新增实体
@@ -39,7 +40,7 @@ namespace MonitorApi.Services
         /// </summary>
         /// <param name="entity">实体对象</param>
         /// <param name="saveNow">是否立即保存</param>
-        Task UpdateAsync(TEntity entity, bool saveNow = true);
+        Task UpdateAsync(int id, TEntity entity, bool saveNow = true);
 
         /// <summary>
         /// 根据ID查询实体
@@ -59,7 +60,10 @@ namespace MonitorApi.Services
         /// </summary>
         /// <param name="predicate">查询条件</param>
         /// <param name="includeProperties">需要包含的导航属性</param>
-        Task<List<TEntity>> GetByConditionAsync(Expression<Func<TEntity, bool>> predicate, string includeProperties = "");
+        Task<List<TEntity>> GetByConditionAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            string includeProperties = ""
+        );
 
         /// <summary>
         /// 分页查询
@@ -76,7 +80,8 @@ namespace MonitorApi.Services
             Expression<Func<TEntity, bool>> predicate,
             Expression<Func<TEntity, object>> orderBy,
             bool isAscending = true,
-            string includeProperties = "");
+            string includeProperties = ""
+        );
 
         /// <summary>
         /// 保存变更（用于saveNow=false的场景）

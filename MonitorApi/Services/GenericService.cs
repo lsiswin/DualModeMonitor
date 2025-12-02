@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 
 namespace MonitorApi.Services
@@ -12,7 +13,8 @@ namespace MonitorApi.Services
     /// 通用CRUD服务实现
     /// </summary>
     /// <typeparam name="TEntity">实体类型</typeparam>
-    public class GenericService<TEntity> : IGenericService<TEntity> where TEntity : class
+    public class GenericService<TEntity> : IGenericService<TEntity>
+        where TEntity : class
     {
         protected readonly ApplicationDbContext _dbContext;
         protected readonly DbSet<TEntity> _dbSet;
@@ -67,12 +69,15 @@ namespace MonitorApi.Services
         /// <summary>
         /// 更新实体
         /// </summary>
-        public async Task UpdateAsync(TEntity entity, bool saveNow = true)
+        public async Task UpdateAsync(int id, TEntity entity, bool saveNow = true)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity), "更新的实体不能为null");
+            var existingEntity = await _dbSet.FindAsync(id);
+            if (existingEntity == null)
+                throw new Exception("找不到实体");
 
-            _dbSet.Update(entity);
+            _dbSet.Entry(existingEntity).CurrentValues.SetValues(entity);
             if (saveNow)
                 await SaveChangesAsync();
         }
@@ -104,7 +109,10 @@ namespace MonitorApi.Services
         /// <summary>
         /// 条件查询实体
         /// </summary>
-        public async Task<List<TEntity>> GetByConditionAsync(Expression<Func<TEntity, bool>> predicate, string includeProperties = "")
+        public async Task<List<TEntity>> GetByConditionAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            string includeProperties = ""
+        )
         {
             if (predicate == null)
                 throw new ArgumentNullException(nameof(predicate), "查询条件不能为null");
@@ -124,7 +132,8 @@ namespace MonitorApi.Services
             Expression<Func<TEntity, bool>> predicate,
             Expression<Func<TEntity, object>> orderBy,
             bool isAscending = true,
-            string includeProperties = "")
+            string includeProperties = ""
+        )
         {
             if (pageIndex < 1)
                 throw new ArgumentOutOfRangeException(nameof(pageIndex), "页码必须大于等于1");
@@ -147,10 +156,7 @@ namespace MonitorApi.Services
             else
                 query = query.OrderByDescending(orderBy);
 
-            var items = await query
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            var items = await query.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
 
             return (items, totalCount);
         }
@@ -179,11 +185,19 @@ namespace MonitorApi.Services
         /// <summary>
         /// 动态包含导航属性
         /// </summary>
-        private IQueryable<TEntity> IncludeProperties(IQueryable<TEntity> query, string includeProperties)
+        private IQueryable<TEntity> IncludeProperties(
+            IQueryable<TEntity> query,
+            string includeProperties
+        )
         {
             if (!string.IsNullOrEmpty(includeProperties))
             {
-                foreach (var property in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                foreach (
+                    var property in includeProperties.Split(
+                        new[] { ',' },
+                        StringSplitOptions.RemoveEmptyEntries
+                    )
+                )
                 {
                     query = query.Include(property.Trim());
                 }

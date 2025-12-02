@@ -13,23 +13,30 @@ namespace DualModeMonitorSystem.ViewModels
 {
     public class AddRegisterMappingDialogViewModel : BindableBase, IDialogAware
     {
-        private string _title = "添加寄存器映射";
-        public string Title
-        {
-            get { return _title; }
-            set { SetProperty(ref _title, value); }
-        }
-
         // --- 数据点基本信息 ---
         private DataPoint _currentDataPoint;
 
         public DataPoint CurrentDataPoint
         {
             get { return _currentDataPoint; }
-            set { _currentDataPoint = value;RaisePropertyChanged(); }
+            set
+            {
+                _currentDataPoint = value;
+                RaisePropertyChanged();
+            }
         }
 
+        private bool isEditing;
 
+        public bool IsEditing
+        {
+            get { return isEditing; }
+            set
+            {
+                isEditing = value;
+                RaisePropertyChanged();
+            }
+        }
 
         // --- 验证错误信息 ---
         private string _errorMessage;
@@ -50,9 +57,7 @@ namespace DualModeMonitorSystem.ViewModels
 
         public DialogCloseListener RequestClose { get; }
 
-        public AddRegisterMappingDialogViewModel()
-        {
-        }
+        public AddRegisterMappingDialogViewModel() { }
 
         // --- IDialogAware 实现 ---
         public bool CanCloseDialog()
@@ -70,9 +75,10 @@ namespace DualModeMonitorSystem.ViewModels
             // 编辑模式
             if (parameters.ContainsKey("IsEdit") && parameters.GetValue<bool>("IsEdit"))
             {
-                Title = "编辑寄存器映射";
-                if(parameters.ContainsKey("DataPoint"))
-                CurrentDataPoint = parameters.GetValue<DataPoint>("DataPoint");
+                IsEditing = parameters.GetValue<bool>("IsEdit");
+                if (parameters.ContainsKey("DataPoint"))
+                    CurrentDataPoint = parameters.GetValue<DataPoint>("DataPoint");
+                CurrentDataPoint.PropertyChanged += OnDataPointPropertyChanged;
             }
             else
             {
@@ -83,7 +89,6 @@ namespace DualModeMonitorSystem.ViewModels
                 }
                 CurrentDataPoint.PropertyChanged += OnDataPointPropertyChanged;
             }
-
         }
 
         private void OnDataPointPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -95,8 +100,10 @@ namespace DualModeMonitorSystem.ViewModels
         // --- 验证方法 ---
         private bool CanConfirm()
         {
-            if (CurrentDataPoint == null) return false;
-            if(CurrentDataPoint.ModbusConfig ==null ) return false;
+            if (CurrentDataPoint == null)
+                return false;
+            if (CurrentDataPoint.ModbusConfig == null)
+                return false;
             bool isValid = ValidateInput();
             return isValid;
         }
@@ -105,9 +112,10 @@ namespace DualModeMonitorSystem.ViewModels
         {
             ErrorMessage = string.Empty;
 
-            
-
-            if (CurrentDataPoint.ModbusConfig.DeviceAddress < 1 || CurrentDataPoint.ModbusConfig.DeviceAddress > 247)
+            if (
+                CurrentDataPoint.ModbusConfig.DeviceAddress < 1
+                || CurrentDataPoint.ModbusConfig.DeviceAddress > 247
+            )
             {
                 ErrorMessage = "从站地址必须在 1-247 之间";
                 return false;
@@ -119,26 +127,32 @@ namespace DualModeMonitorSystem.ViewModels
                 return false;
             }
 
-
             if (CurrentDataPoint.ModbusConfig.DataMultiplier == 0)
             {
                 ErrorMessage = "系数不能为零";
                 return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(CurrentDataPoint.Unit) && CurrentDataPoint.Unit.Length > 20)
+            if (
+                !string.IsNullOrWhiteSpace(CurrentDataPoint.Unit)
+                && CurrentDataPoint.Unit.Length > 20
+            )
             {
                 ErrorMessage = "单位字符不能超过20个字符";
+                return false;
+            }
+            if (
+                !string.IsNullOrWhiteSpace(CurrentDataPoint.Name)
+                && CurrentDataPoint.Name.Length > 20
+            )
+            {
+                ErrorMessage = "名称不能超过20个字符";
                 return false;
             }
 
             return true;
         }
 
-       
-        
-
-        
         // --- 方法 ---
         private void OnConfirm()
         {

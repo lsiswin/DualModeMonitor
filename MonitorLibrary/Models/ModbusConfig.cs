@@ -1,6 +1,6 @@
-using MonitorLibrary.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using MonitorLibrary.Models.Enums;
 
 public class ModbusConfig : BindableBase
 {
@@ -15,10 +15,12 @@ public class ModbusConfig : BindableBase
     /// 设备地址（从机ID）
     /// </summary>
     public byte DeviceAddress { get; set; } = 1;
+
     /// <summary>
     /// 寄存器起始地址
     /// </summary>
     public ushort RegisterStart { get; set; }
+
     /// <summary>
     /// Modbus功能码
     /// </summary>
@@ -35,17 +37,18 @@ public class ModbusConfig : BindableBase
     public ModbusByteOrder Endianness { get; set; } = ModbusByteOrder.BigEndian;
 
     // --- 计算属性 ---
-    [NotMapped] 
-    public int RegisterLength => DataFormat switch
-    {
-        ModbusDataFormat.Int16 => 2,
-        ModbusDataFormat.UInt16 => 2,
-        ModbusDataFormat.Int32 => 4,
-        ModbusDataFormat.UInt32 => 4,
-        ModbusDataFormat.Float32 => 4,
-        ModbusDataFormat.Float64 => 8,
-        _ => 4
-    };
+    [NotMapped]
+    public int RegisterLength =>
+        DataFormat switch
+        {
+            ModbusDataFormat.Int16 => 2,
+            ModbusDataFormat.UInt16 => 2,
+            ModbusDataFormat.Int32 => 4,
+            ModbusDataFormat.UInt32 => 4,
+            ModbusDataFormat.Float32 => 4,
+            ModbusDataFormat.Float64 => 8,
+            _ => 4,
+        };
 
     [NotMapped]
     public int RegisterCount => RegisterLength / 2;
@@ -55,9 +58,10 @@ public class ModbusConfig : BindableBase
 
     [NotMapped]
     public string Description =>
-        $"从机:{DeviceAddress} 功能:{(byte)FunctionCode:X2} 地址:{RegisterStartHex} 格式:{DataFormat}";
+        $"从机:{DeviceAddress} 功能:{(byte)FunctionCode:X2} 地址:{RegisterStartHex}";
 
     // --- 通用方法 ---
     public decimal ToActual(decimal raw) => raw * DataMultiplier + Offset;
+
     public decimal ToRaw(decimal actual) => (actual - Offset) / DataMultiplier;
 }

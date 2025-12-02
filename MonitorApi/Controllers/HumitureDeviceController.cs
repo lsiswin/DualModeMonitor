@@ -15,6 +15,7 @@ namespace MonitorApi.Controllers
         {
             this.deviceService = deviceService;
         }
+
         /// <summary>
         /// 获取所有设备信息
         /// </summary>
@@ -25,6 +26,7 @@ namespace MonitorApi.Controllers
             var devices = await deviceService.GetAllAsync("SerialPortConfig");
             return ApiResponse<List<HumitureDevices>>.SuccessResult(devices);
         }
+
         /// <summary>
         /// 根据ID获取设备
         /// </summary>
@@ -36,10 +38,11 @@ namespace MonitorApi.Controllers
             var device = await deviceService.GetByIdAsync(id);
             if (device == null)
             {
-                return ApiResponse<HumitureDevices>.ErrorResult("找不到对应设备") ;
+                return ApiResponse<HumitureDevices>.ErrorResult("找不到对应设备");
             }
             return ApiResponse<HumitureDevices>.SuccessResult(device);
         }
+
         /// <summary>
         /// 新增设备
         /// </summary>
@@ -51,6 +54,7 @@ namespace MonitorApi.Controllers
             await deviceService.AddAsync(device);
             return ApiResponse<HumitureDevices>.SuccessResult(device);
         }
+
         /// <summary>
         /// 更新设备
         /// </summary>
@@ -60,14 +64,10 @@ namespace MonitorApi.Controllers
         [HttpPut("{id}")]
         public async Task<ApiResponse<HumitureDevices>> UpdateDevice(int id, HumitureDevices device)
         {
-            var existingDevice = await deviceService.GetByIdAsync(id);
-            if (existingDevice == null)
-            {
-                return ApiResponse<HumitureDevices>.ErrorResult("找不到对应设备");
-            }
-            var updatedDevice = deviceService.UpdateAsync(device);
+            var updatedDevice = deviceService.UpdateAsync(id, device);
             return ApiResponse<HumitureDevices>.SuccessResult(device);
         }
+
         /// <summary>
         /// 删除设备
         /// </summary>
@@ -82,9 +82,7 @@ namespace MonitorApi.Controllers
                 return ApiResponse<bool>.ErrorResult("找不到对应设备");
             }
             deviceService.DeleteAsync(id);
-            return ApiResponse<bool>.SuccessResult(true,"删除成功");
+            return ApiResponse<bool>.SuccessResult(true, "删除成功");
         }
-
-
     }
 }

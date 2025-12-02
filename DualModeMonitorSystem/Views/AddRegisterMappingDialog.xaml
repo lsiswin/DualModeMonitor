@@ -10,16 +10,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
     xmlns:prism="http://prismlibrary.com/"
-    Width="480" 
+    Width="580" 
     prism:ViewModelLocator.AutoWireViewModel="True"
-    d:DesignHeight="800"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <conver:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
         <SolidColorBrush x:Key="MaterialDesignPaper" Color="#272E3B" />
+        <conver:BooleanToTextConverter x:Key="BooleanToTextConverter" />
         <conver:RadioButtonToEnumConverter x:Key="RadioButtonToEnumConverter" />
-
         <Style x:Key="DialogTextBoxStyle" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}" TargetType="TextBox">
             <Setter Property="Background" Value="#1D2129" />
             <Setter Property="BorderBrush" Value="#4B5563" />
@@ -48,11 +47,38 @@
             <Setter Property="materialDesign:HintAssist.Foreground" Value="#9CA3AF" />
         </Style>
 
-        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
-            <Setter Property="Margin" Value="0,15,0,10" />
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="White" />
+        <Style x:Key="DialogTabItemStyle" TargetType="TabItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Grid>
+                            <Border
+                                Name="Border"
+                                Background="Transparent"
+                                BorderThickness="0">
+                                <ContentPresenter
+                                    x:Name="ContentSite"
+                                    Margin="10,5"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    ContentSource="Header" />
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#165DFF" />
+                                <Setter TargetName="Border" Property="CornerRadius" Value="6" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#3A4556" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
     </UserControl.Resources>
@@ -84,187 +110,243 @@
                         Margin="10,0,0,0"
                         VerticalAlignment="Center"
                         FontSize="18"
-                        FontWeight="Bold"
-                        Text="数据点配置 (CurrentDataPoint)" />
+                        FontWeight="Bold">
+                        <TextBlock.Text>
+                            <MultiBinding Converter="{StaticResource BooleanToTextConverter}">
+                                <Binding Path="IsEditing" />
+                                <Binding Source="编辑数据点配置" />
+                                <Binding Source="新增数据点配置" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
                 </StackPanel>
             </Border>
 
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="20,10,20,20">
+            <Grid Grid.Row="1" Margin="20,10,20,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                    <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="基本信息与转换系数" />
+                <TabControl
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Foreground="White"
+                    VerticalAlignment="Stretch">
 
-                    <UniformGrid Margin="0,0,0,10" Columns="2" HorizontalAlignment="Stretch">
-                        <TextBox
-                            Margin="0,0,10,15"
-                            Style="{StaticResource DialogTextBoxStyle}"
-                            materialDesign:HintAssist.Hint="数据点名称 (如: 温度)"
-                            Text="{Binding CurrentDataPoint.Name, UpdateSourceTrigger=PropertyChanged}" />
+                    <TabControl.Resources>
+                        <Style TargetType="TabItem" BasedOn="{StaticResource DialogTabItemStyle}"/>
+                    </TabControl.Resources>
 
-                        <TextBox
-                            Margin="10,0,0,15"
-                            Style="{StaticResource DialogTextBoxStyle}"
-                            materialDesign:HintAssist.Hint="数据点编码 (如: Temp)"
-                            Text="{Binding CurrentDataPoint.Code, UpdateSourceTrigger=PropertyChanged}" />
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal" >
+                                <md:PackIcon Width="18" Height="18" Margin="0,0,8,0" Kind="Pencil" Foreground="White" />
+                                <TextBlock Text="基本信息与转换" Foreground="White" />
+                            </StackPanel>
+                        </TabItem.Header>
 
-                        <TextBox
-                            Margin="0,0,10,15"
-                            Style="{StaticResource DialogTextBoxStyle}"
-                            materialDesign:HintAssist.Hint="单位 (如: °C, %RH)"
-                            Text="{Binding CurrentDataPoint.Unit, UpdateSourceTrigger=PropertyChanged}" />
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,20,0,0">
+                            <StackPanel>
+                                <TextBlock Margin="0,0,0,10" FontSize="14" FontWeight="SemiBold" Text="基本信息" Foreground="White"/>
+                                
+                                <UniformGrid Margin="0,0,0,10" Columns="2" HorizontalAlignment="Stretch">
+                                    <TextBox
+                                        Margin="0,0,10,15"
+                                        Style="{StaticResource DialogTextBoxStyle}"
+                                        materialDesign:HintAssist.Hint="数据点名称 (如: 温度)"
+                                        Text="{Binding CurrentDataPoint.Name, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <md:NumericUpDown
-                            Margin="10,0,0,15"
-                            Style="{StaticResource DialogNumericUpDownStyle}"
-                            materialDesign:HintAssist.Hint="采集间隔 (秒, 1-3600)"
-                            Minimum="1"
-                            Maximum="3600"
-                            Value="{Binding CurrentDataPoint.CollectInterval}" />
+                                    <TextBox
+                                        Margin="10,0,0,15"
+                                        Style="{StaticResource DialogTextBoxStyle}"
+                                        materialDesign:HintAssist.Hint="数据点编码 (如: Temp)"
+                                        Text="{Binding CurrentDataPoint.Code, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <md:NumericUpDown
-                            Margin="0,0,10,0"
-                            Style="{StaticResource DialogNumericUpDownStyle}"
-                            materialDesign:HintAssist.Hint="系数 (Factor)"
-                            Value="{Binding CurrentDataPoint.ModbusConfig.Factor}" />
+                                    <TextBox
+                                        Margin="0,0,10,15"
+                                        Style="{StaticResource DialogTextBoxStyle}"
+                                        materialDesign:HintAssist.Hint="单位 (如: °C, %RH)"
+                                        Text="{Binding CurrentDataPoint.Unit, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <md:NumericUpDown
-                            Margin="10,0,0,0"
-                            Style="{StaticResource DialogNumericUpDownStyle}"
-                            materialDesign:HintAssist.Hint="偏移量 (Offset)"
-                            Value="{Binding CurrentDataPoint.ModbusConfig.Offset}" />
-                    </UniformGrid>
+                                    <md:NumericUpDown
+                                        Margin="10,0,0,15"
+                                        Style="{StaticResource DialogNumericUpDownStyle}"
+                                        materialDesign:HintAssist.Hint="采集间隔 (秒, 1-3600)"
+                                        Minimum="1"
+                                        Maximum="3600"
+                                        Value="{Binding CurrentDataPoint.CollectInterval}" />
 
-                    <Separator Margin="0,0,0,5" Style="{StaticResource MaterialDesignDarkSeparator}" />
+                                    <md:NumericUpDown
+                                        Margin="0,0,10,0"
+                                        Style="{StaticResource DialogNumericUpDownStyle}"
+                                        materialDesign:HintAssist.Hint="系数 (Factor)"
+                                        Value="{Binding CurrentDataPoint.ModbusConfig.Factor}" />
 
-                    <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Modbus协议设置" />
+                                    <md:NumericUpDown
+                                        Margin="10,0,0,0"
+                                        Style="{StaticResource DialogNumericUpDownStyle}"
+                                        materialDesign:HintAssist.Hint="偏移量 (Offset)"
+                                        Value="{Binding CurrentDataPoint.ModbusConfig.Offset}" />
+                                </UniformGrid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
 
-                    <UniformGrid Margin="0,5,0,5" Columns="2" HorizontalAlignment="Stretch">
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <md:PackIcon Width="18" Height="18" Margin="0,0,8,0" Kind="Network" Foreground="White" />
+                                <TextBlock Text="Modbus 协议设置" Foreground="White"/>
+                            </StackPanel>
+                        </TabItem.Header>
 
-                        <StackPanel Margin="0,0,10,15">
-                            <TextBlock Margin="0,0,0,5" FontSize="12" Foreground="#9CA3AF" Text="从站地址 (1-255)" />
-                            <md:NumericUpDown
-                                Style="{StaticResource DialogNumericUpDownStyle}"
-                                Maximum="255"
-                                Minimum="1"
-                                Value="{Binding CurrentDataPoint.ModbusConfig.DeviceAddress}" />
-                        </StackPanel>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,20,0,0">
+                            <StackPanel>
+                                <UniformGrid Margin="0,5,0,5" Columns="2" HorizontalAlignment="Stretch">
 
-                        <StackPanel Margin="10,0,0,15">
-                            <TextBlock Margin="0,0,0,5" FontSize="12" Foreground="#9CA3AF" Text="起始地址 (0-65535)" />
-                            <md:NumericUpDown
-                                Style="{StaticResource DialogNumericUpDownStyle}"
-                                Maximum="65535"
-                                Minimum="0"
-                                Value="{Binding CurrentDataPoint.ModbusConfig.RegisterStart}" />
-                        </StackPanel>
+                                    <StackPanel Margin="0,0,10,15">
+                                        <TextBlock Margin="0,0,0,5" FontSize="12" Foreground="#9CA3AF" Text="从站地址 (1-255)" />
+                                        <md:NumericUpDown
+                                            Style="{StaticResource DialogNumericUpDownStyle}"
+                                            Maximum="255"
+                                            Minimum="1"
+                                            Value="{Binding CurrentDataPoint.ModbusConfig.DeviceAddress}" />
+                                    </StackPanel>
 
-                        <StackPanel Margin="0,0,10,15">
-                            <TextBlock Margin="0,0,0,5" FontSize="12" Foreground="#9CA3AF" Text="功能码" />
-                            <ComboBox
-                                Style="{StaticResource DialogComboBoxStyle}"
-                                ItemsSource="{local:EnumBindingSource enums:ModbusFunctionCode}"
-                                SelectedItem="{Binding CurrentDataPoint.ModbusConfig.FunctionCode}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </StackPanel>
+                                    <StackPanel Margin="10,0,0,15">
+                                        <TextBlock Margin="0,0,0,5" FontSize="12" Foreground="#9CA3AF" Text="起始地址 (0-65535)" />
+                                        <md:NumericUpDown
+                                            Style="{StaticResource DialogNumericUpDownStyle}"
+                                            Maximum="65535"
+                                            Minimum="0"
+                                            Value="{Binding CurrentDataPoint.ModbusConfig.RegisterStart}" />
+                                    </StackPanel>
 
-                        <StackPanel Margin="10,0,0,15">
-                            <TextBlock Margin="0,0,0,5" FontSize="12" Foreground="#9CA3AF" Text="数据格式" />
-                            <ComboBox
-                                Style="{StaticResource DialogComboBoxStyle}"
-                                ItemsSource="{local:EnumBindingSource EnumType=enums:ModbusDataFormat}"
-                                SelectedItem="{Binding CurrentDataPoint.ModbusConfig.DataFormat}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </StackPanel>
-                    </UniformGrid>
-                    <StackPanel Margin="0,0,0,5">
-                        <TextBlock Margin="0,0,0,5" FontSize="12" Foreground="#9CA3AF" Text="字节序" />
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Height="40">
-                            <RadioButton
-                            Margin="0,0,15,0"
-                            Background="#36CFC9"
-                            Content="大端 (Big-Endian)"
-                            Foreground="White"
-                            GroupName="ByteOrder"
-                            IsChecked="{Binding ModbusConfig.Endianness, Converter={StaticResource RadioButtonToEnumConverter}, ConverterParameter={x:Static enums:ModbusByteOrder.BigEndian}}" />
-                                                    <RadioButton
-                            Background="#165DFF"
-                            Content="小端 (Little-Endian)"
-                            Foreground="White"
-                            GroupName="ByteOrder"
-                            IsChecked="{Binding ModbusConfig.Endianness, Converter={StaticResource RadioButtonToEnumConverter}, ConverterParameter={x:Static enums:ModbusByteOrder.LittleEndian}}" />   
-                        </StackPanel>
-                    </StackPanel>
-                    <Separator Margin="0,0,0,5" Style="{StaticResource MaterialDesignDarkSeparator}" />
+                                    <StackPanel Margin="0,0,10,15">
+                                        <TextBlock Margin="0,0,0,5" FontSize="12" Foreground="#9CA3AF" Text="功能码" />
+                                        <ComboBox
+                                            Style="{StaticResource DialogComboBoxStyle}"
+                                            ItemsSource="{local:EnumBindingSource enums:ModbusFunctionCode}"
+                                            SelectedItem="{Binding CurrentDataPoint.ModbusConfig.FunctionCode}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </StackPanel>
 
-                    <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="告警阈值与数据校验" />
+                                    <StackPanel Margin="10,0,0,15">
+                                        <TextBlock Margin="0,0,0,5" FontSize="12" Foreground="#9CA3AF" Text="数据格式" />
+                                        <ComboBox
+                                            Style="{StaticResource DialogComboBoxStyle}"
+                                            ItemsSource="{local:EnumBindingSource EnumType=enums:ModbusDataFormat}"
+                                            SelectedItem="{Binding CurrentDataPoint.ModbusConfig.DataFormat}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </UniformGrid>
 
-                    <UniformGrid Margin="0,0,0,10" Columns="2" HorizontalAlignment="Stretch">
+                                <StackPanel Margin="0,0,0,15">
+                                    <TextBlock Margin="0,0,0,5" FontSize="12" Foreground="#9CA3AF" Text="字节序" />
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Height="40">
+                                        <RadioButton
+                                            Margin="0,0,15,0"
+                                            Content="大端 (Big-Endian)"
+                                            Foreground="White"
+                                            GroupName="ByteOrder"
+                                            IsChecked="{Binding CurrentDataPoint.ModbusConfig.Endianness, Converter={StaticResource RadioButtonToEnumConverter}, ConverterParameter={x:Static enums:ModbusByteOrder.BigEndian}}" />
+                                        <RadioButton
+                                            Content="小端 (Little-Endian)"
+                                            Foreground="White"
+                                            GroupName="ByteOrder"
+                                            IsChecked="{Binding CurrentDataPoint.ModbusConfig.Endianness, Converter={StaticResource RadioButtonToEnumConverter}, ConverterParameter={x:Static enums:ModbusByteOrder.LittleEndian}}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
 
-                        <md:NumericUpDown
-                            Margin="0,0,10,15"
-                            Style="{StaticResource DialogNumericUpDownStyle}"
-                            materialDesign:HintAssist.Hint="上限阈值 (UpperLimit)"
-                            Value="{Binding CurrentDataPoint.UpperLimit}" />
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <md:PackIcon Width="18" Height="18" Margin="0,0,8,0" Kind="Alert" Foreground="White"/>
+                                <TextBlock Text="告警与数据校验" Foreground="White"/>
+                            </StackPanel>
+                        </TabItem.Header>
 
-                        <md:NumericUpDown
-                            Margin="10,0,0,15"
-                            Style="{StaticResource DialogNumericUpDownStyle}"
-                            materialDesign:HintAssist.Hint="下限阈值 (LowerLimit)"
-                            Value="{Binding CurrentDataPoint.LowerLimit}" />
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,20,0,0">
+                            <StackPanel>
 
-                        <md:NumericUpDown
-                            Margin="0,0,10,0"
-                            Style="{StaticResource DialogNumericUpDownStyle}"
-                            materialDesign:HintAssist.Hint="有效最大值 (ValidMax)"
-                            Value="{Binding CurrentDataPoint.ValidMax}" />
+                                <TextBlock Margin="0,0,0,10" FontSize="14" FontWeight="SemiBold" Text="告警与校验阈值" Foreground="White"/>
 
-                        <md:NumericUpDown
-                            Margin="10,0,0,0"
-                            Style="{StaticResource DialogNumericUpDownStyle}"
-                            materialDesign:HintAssist.Hint="有效最小值 (ValidMin)"
-                            Value="{Binding CurrentDataPoint.ValidMin}" />
-                    </UniformGrid>
+                                <UniformGrid Margin="0,0,0,10" Columns="2" HorizontalAlignment="Stretch">
 
-                    <Separator Margin="0,0,0,10" Style="{StaticResource MaterialDesignDarkSeparator}" />
+                                    <md:NumericUpDown
+                                        Margin="0,0,10,15"
+                                        Style="{StaticResource DialogNumericUpDownStyle}"
+                                        materialDesign:HintAssist.Hint="上限阈值 (UpperLimit)"
+                                        Value="{Binding CurrentDataPoint.UpperLimit}" />
 
-                    <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="告警策略与数据保留" />
+                                    <md:NumericUpDown
+                                        Margin="10,0,0,15"
+                                        Style="{StaticResource DialogNumericUpDownStyle}"
+                                        materialDesign:HintAssist.Hint="下限阈值 (LowerLimit)"
+                                        Value="{Binding CurrentDataPoint.LowerLimit}" />
 
-                    <UniformGrid Columns="2" HorizontalAlignment="Stretch">
+                                    <md:NumericUpDown
+                                        Margin="0,0,10,0"
+                                        Style="{StaticResource DialogNumericUpDownStyle}"
+                                        materialDesign:HintAssist.Hint="有效最大值 (ValidMax)"
+                                        Value="{Binding CurrentDataPoint.ValidMax}" />
 
-                        <md:NumericUpDown
-                            Margin="0,0,10,15"
-                            Style="{StaticResource DialogNumericUpDownStyle}"
-                            materialDesign:HintAssist.Hint="数据保留天数 (1-3650)"
-                            Minimum="1"
-                            Maximum="3650"
-                            Value="{Binding CurrentDataPoint.DataRetentionDays}" />
+                                    <md:NumericUpDown
+                                        Margin="10,0,0,0"
+                                        Style="{StaticResource DialogNumericUpDownStyle}"
+                                        materialDesign:HintAssist.Hint="有效最小值 (ValidMin)"
+                                        Value="{Binding CurrentDataPoint.ValidMin}" />
+                                </UniformGrid>
 
-                        <md:NumericUpDown
-                            Margin="10,0,0,15"
-                            Style="{StaticResource DialogNumericUpDownStyle}"
-                            materialDesign:HintAssist.Hint="告警延迟 (秒)"
-                            Minimum="0"
-                            Value="{Binding CurrentDataPoint.AlarmDelay}" />
-                    </UniformGrid>
+                                <TextBlock Margin="0,20,0,10" FontSize="14" FontWeight="SemiBold" Text="告警策略与数据保留" Foreground="White"/>
 
-                    <CheckBox
-                        Margin="0,10,0,0"
-                        Content="启用告警功能"
-                        Foreground="White"
-                        IsChecked="{Binding CurrentDataPoint.EnableAlarm}"
-                        Style="{StaticResource MaterialDesignCheckBox}" />
-                </StackPanel>
-            </ScrollViewer>
+                                <UniformGrid Columns="2" HorizontalAlignment="Stretch">
+
+                                    <md:NumericUpDown
+                                        Margin="0,0,10,15"
+                                        Style="{StaticResource DialogNumericUpDownStyle}"
+                                        materialDesign:HintAssist.Hint="数据保留天数 (1-3650)"
+                                        Minimum="1"
+                                        Maximum="3650"
+                                        Value="{Binding CurrentDataPoint.DataRetentionDays}" />
+
+                                    <md:NumericUpDown
+                                        Margin="10,0,0,15"
+                                        Style="{StaticResource DialogNumericUpDownStyle}"
+                                        materialDesign:HintAssist.Hint="告警延迟 (秒)"
+                                        Minimum="0"
+                                        Value="{Binding CurrentDataPoint.AlarmDelay}" />
+                                </UniformGrid>
+
+                                <CheckBox
+                                    Margin="0,15,0,0"
+                                    Content="启用告警功能"
+                                    Foreground="White"
+                                    IsChecked="{Binding CurrentDataPoint.EnableAlarm}"
+                                    Style="{StaticResource MaterialDesignCheckBox}" />
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+                </TabControl>
+            </Grid>
 
             <StackPanel
                 Grid.Row="2"

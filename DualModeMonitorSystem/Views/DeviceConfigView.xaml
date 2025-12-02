@@ -17,14 +17,14 @@
         <convert:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <convert:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
         <convert:RadioButtonToEnumConverter x:Key="RadioButtonToEnumConverter" />
+
     </UserControl.Resources>
-    <Grid Background="#1D2129">
+    <Grid Background="#1D2129" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="320" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!--  左侧设备列表  -->
         <md:Card
             Grid.Column="0"
             Margin="20"
@@ -38,7 +38,6 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!--  设备列表标题  -->
                 <StackPanel Grid.Row="0" Margin="20,20,20,10">
                     <TextBlock
                         FontSize="18"
@@ -49,7 +48,7 @@
                         FontSize="12"
                         Foreground="#9CA3AF"
                         Text="选择要配置的设备" />
-                    <!--  搜索框  -->
+
                     <StackPanel
                         Grid.Row="0"
                         Margin="0,10,0,0"
@@ -86,69 +85,63 @@
 
 
 
-                <!--  设备列表  -->
-                <Border 
-                    Grid.Row="1">
-                    
-                <ListBox
+                <Border Grid.Row="1">
+                    <ListBox
                         Margin="10"
                         ItemsSource="{Binding Devices}"
                         SelectedItem="{Binding SelectDevice}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <md:Card
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <md:Card
                                     Margin="0,0,0,10"
                                     Padding="15"
                                     Background="{Binding IsSelected}"
                                     Foreground="White">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
 
-                                    <!--  设备信息  -->
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock
                                                 FontSize="14"
                                                 FontWeight="SemiBold"
                                                 Text="{Binding Name}" />
-                                        <TextBlock
+                                            <TextBlock
                                                 Margin="0,2,0,0"
                                                 FontSize="11"
                                                 Foreground="#9CA3AF"
                                                 Text="{Binding Location}" />
-                                        <TextBlock
+                                            <TextBlock
                                                 FontSize="11"
                                                 Foreground="#9CA3AF"
                                                 Text="{Binding DeviceCode}" />
-                                    </StackPanel>
+                                        </StackPanel>
 
-                                    <!--  状态指示  -->
-                                    <StackPanel
+                                        <StackPanel
                                             Grid.Column="1"
                                             Margin="30,0"
                                             HorizontalAlignment="Right"
                                             VerticalAlignment="Center">
-                                        <Border
+                                            <Border
                                                 Width="8"
                                                 Height="8"
                                                 Margin="0,0,0,2"
                                                 Background="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
                                                 CornerRadius="4" />
-                                        <TextBlock
+                                            <TextBlock
                                                 FontSize="10"
                                                 Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
                                                 Text="{Binding Status}" />
-                                    </StackPanel>
-                                </Grid>
-                            </md:Card>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                                        </StackPanel>
+                                    </Grid>
+                                </md:Card>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
 
                 </Border>
-                <!--  添加设备按钮  -->
                 <Button
                     Grid.Row="2"
                     Height="45"
@@ -168,14 +161,12 @@
             </Grid>
         </md:Card>
 
-        <!--  右侧配置区域  -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!--  页面标题和当前设备信息  -->
             <md:Card
                 Grid.Row="0"
                 Margin="0,20,20,10"
@@ -189,7 +180,6 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <!--  设备图标  -->
                     <md:PackIcon
                         Grid.Column="0"
                         Width="32"
@@ -198,7 +188,6 @@
                         Foreground="#165DFF"
                         Kind="Cog" />
 
-                    <!--  设备信息  -->
                     <StackPanel Grid.Column="1">
                         <TextBlock
                             FontSize="20"
@@ -211,7 +200,6 @@
                             Text="配置设备通信参数和协议设置" />
                     </StackPanel>
 
-                    <!--  设备状态  -->
                     <StackPanel
                         Grid.Column="2"
                         HorizontalAlignment="Right"
@@ -232,7 +220,6 @@
                 </Grid>
             </md:Card>
 
-            <!--  配置选项卡  -->
             <TabControl
                 Grid.Row="1"
                 Margin="0,0,20,20"
@@ -277,13 +264,11 @@
                     </Style>
                 </TabControl.Resources>
 
-                <!--  串口配置选项卡  -->
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <md:PackIcon
-                                
-                                Foreground="White" 
+                                Foreground="White"
                                 Width="18"
                                 Height="18"
                                 Margin="0,0,8,0"
@@ -303,9 +288,7 @@
                                     <RowDefinition Height="auto" />
                                 </Grid.RowDefinitions>
 
-                                <!--  串口参数配置  -->
                                 <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                                    <!--  标题  -->
                                     <StackPanel Margin="0,0,0,25">
                                         <TextBlock
                                             FontSize="18"
@@ -318,7 +301,6 @@
                                             Text="配置RS485/RS232通信参数" />
                                     </StackPanel>
 
-                                    <!--  串口基本参数  -->
                                     <UniformGrid Margin="0,0,0,20" Columns="2">
                                         <StackPanel Margin="0,0,15,15">
                                             <TextBlock
@@ -402,7 +384,6 @@
                                         </StackPanel>
                                     </UniformGrid>
 
-                                    <!--  高级参数  -->
                                     <UniformGrid Margin="0,0,0,20" Columns="2">
                                         <StackPanel Margin="0,0,15,0">
                                             <TextBlock
@@ -444,7 +425,6 @@
                                         </StackPanel>
                                     </UniformGrid>
 
-                                    <!--  操作按钮  -->
                                     <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                                         <Button
                                             Height="40"
@@ -480,7 +460,6 @@
                                     </StackPanel>
                                 </StackPanel>
 
-                                <!--  连接状态面板  -->
                                 <md:Card
                                     Grid.Row="1"
                                     Margin="0,30"
@@ -547,459 +526,240 @@
                     </ScrollViewer>
                 </TabItem>
 
-                <!--  Modbus配置选项卡  -->
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <md:PackIcon
-                                Width="18"
-                                Height="18"
-                                Margin="0,0,8,0"
-                                Foreground="White"  
-                                Kind="SwapHorizontal" />
-                            <TextBlock Text="Modbus配置" Foreground="White"/>
+                Width="18"
+                Height="18"
+                Margin="0,0,8,0"
+                Foreground="White"
+                Kind="TableSettings" />
+                            <TextBlock Text="数据点映射管理" Foreground="White" />
                         </StackPanel>
                     </TabItem.Header>
 
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <DockPanel Grid.Row="0" Margin="0,0,0,15">
+                            <Button
+                DockPanel.Dock="Right"
+                Height="36"
+                Padding="15,0"
+                Background="#165DFF"
+                Command="{Binding AddRegisterMappingCommand}"
+                Style="{StaticResource MaterialDesignRaisedButton}"
+                ToolTip="新增一个数据点映射">
+                                <StackPanel Orientation="Horizontal">
+                                    <md:PackIcon Kind="Plus" Margin="0,0,5,0" Width="18" Height="18" />
+                                    <TextBlock Text="新增数据点" />
+                                </StackPanel>
+                            </Button>
+
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <md:PackIcon
+                    Width="20"
+                    Height="20"
+                    Margin="0,0,8,0"
+                    Foreground="#165DFF"
+                    Kind="Table" />
+                                <TextBlock
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                                    Foreground="White"
+                    Text="设备数据点映射列表" />
+                            </StackPanel>
+                        </DockPanel>
+
                         <md:Card
-                            Padding="25"
-                            Background="#272E3B"
-                            Foreground="White">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-                                <!--  1. 新增：数据点选择区域 (关键重构)  -->
-                                <StackPanel Grid.Row="0" Margin="0,0,0,20">
-                                    <TextBlock
-                                        Margin="0,0,0,8"
-                                        FontSize="12"
-                                        FontWeight="SemiBold"
-                                        Text="选择数据点" />
-                                    <ComboBox
-                                        Height="40"
-                                        Padding="10"
-                                        Background="#1D2129"
-                                        BorderBrush="#4B5563"
-                                        ItemsSource="{Binding DataPoints}"
-                                        SelectedItem="{Binding SelectedDataPoint}"
-                                        Style="{StaticResource MaterialDesignOutlinedComboBox}">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Name}" />
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                </StackPanel>
-                                <!--  2. 重构：Modbus配置区域 (仅在数据点选择后显示)  -->
-                                <StackPanel
-                                    Grid.Row="1"
-                                    Margin="0,0,0,20"
-                                    Visibility="{Binding SelectedDataPoint, Converter={StaticResource NullToVisibilityConverter}}">
-                                    <!--  与之前相同的Modbus配置参数区域，但绑定到SelectedDataPoint  -->
-                                    <StackPanel Margin="0,0,0,20">
-                                        <TextBlock
-                                            FontSize="18"
-                                            FontWeight="SemiBold"
-                                            Text="Modbus协议设置" />
-                                        <TextBlock
-                                            Margin="0,5,0,0"
-                                            FontSize="12"
-                                            Foreground="#9CA3AF"
-                                            Text="配置Modbus RTU/TCP通信参数" />
-                                    </StackPanel>
+            Grid.Row="1"
+            Background="#1D2129"
+            Padding="0"
+            UniformCornerRadius="6"
+            BorderBrush="#374151"
+            BorderThickness="1">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <DataGrid
+                    MinHeight="300"
+                    md:DataGridAssist.SelectedCellBorderBrush="#165DFF"
+                    AutoGenerateColumns="False"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    CanUserAddRows="False"
+                    CanUserSortColumns="True" Foreground="White"
+                    HeadersVisibility="All"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding DataPoints}">
 
-                                    <!--  Modbus基本参数  -->
-                                    <UniformGrid Margin="0,0,0,20" Columns="2">
-                                        <StackPanel Margin="0,0,15,15">
-                                            <TextBlock
-                                                Margin="0,0,0,8"
-                                                FontSize="12"
-                                                FontWeight="SemiBold"
-                                                Text="协议类型" />
-                                            <ComboBox
-                                                Height="40"
-                                                Padding="10"
-                                                Background="#1D2129"
-                                                BorderBrush="#4B5563"
-                                                SelectedIndex="0"
-                                                Style="{StaticResource MaterialDesignOutlinedComboBox}">
-                                                <ComboBoxItem Content="Modbus RTU" />
-                                                <ComboBoxItem Content="Modbus TCP" />
-                                            </ComboBox>
-                                        </StackPanel>
+                                    <DataGrid.Resources>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="Background" Value="#272E3B" />
+                                            <Setter Property="Foreground" Value="White" />
+                                            <Setter Property="BorderBrush" Value="#4B5563" />
+                                            <Setter Property="BorderThickness" Value="0,0,1,1" />
+                                            <Setter Property="Height" Value="40" />
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                            <Setter Property="Padding" Value="10,0" />
+                                        </Style>
 
-                                        <StackPanel Margin="15,0,0,15">
-                                            <TextBlock
-                                                Margin="0,0,0,8"
-                                                FontSize="12"
-                                                FontWeight="SemiBold"
-                                                Text="从站地址" />
-                                            <md:NumericUpDown
-                                                Height="40"
-                                                Padding="10"
-                                                Background="#1D2129"
-                                                BorderBrush="#4B5563"
-                                                Maximum="247"
-                                                Minimum="1"
-                                                Style="{StaticResource MaterialDesignOutlinedNumericUpDown}"
-                                                Value="{Binding ModbusConfig.DeviceAddress}" />
-                                        </StackPanel>
-
-                                        <StackPanel Margin="0,0,15,0">
-                                            <TextBlock
-                                                Margin="0,0,0,8"
-                                                FontSize="12"
-                                                FontWeight="SemiBold"
-                                                Text="功能码" />
-                                            <ComboBox
-                                                Height="40"
-                                                Padding="10"
-                                                Background="#1D2129"
-                                                BorderBrush="#4B5563"
-                                                ItemsSource="{local:EnumBindingSource enums:ModbusFunctionCode}"
-                                                SelectedItem="{Binding ModbusConfig.FunctionCode}"
-                                                Style="{StaticResource MaterialDesignOutlinedComboBox}">
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                            </ComboBox>
-                                        </StackPanel>
-
-                                        <StackPanel Margin="15,0,0,0">
-                                            <TextBlock
-                                                Margin="0,0,0,8"
-                                                FontSize="12"
-                                                FontWeight="SemiBold"
-                                                Text="数据格式" />
-                                            <ComboBox
-                                                Height="40"
-                                                Padding="10"
-                                                Background="#1D2129"
-                                                BorderBrush="#4B5563"
-                                                ItemsSource="{local:EnumBindingSource EnumType=enums:ModbusDataFormat}"
-                                                SelectedItem="{Binding ModbusConfig.DataFormat}"
-                                                Style="{StaticResource MaterialDesignOutlinedComboBox}">
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                            </ComboBox>
-                                        </StackPanel>
-                                    </UniformGrid>
-
-                                    <!--  寄存器参数  -->
-                                    <UniformGrid Margin="0,0,0,20" Columns="2">
-                                        <StackPanel Margin="0,0,15,0">
-                                            <TextBlock
-                                                Margin="0,0,0,8"
-                                                FontSize="12"
-                                                FontWeight="SemiBold"
-                                                Text="起始地址" />
-                                            <md:NumericUpDown
-                                                Height="40"
-                                                Padding="10"
-                                                Background="#1D2129"
-                                                BorderBrush="#4B5563"
-                                                Maximum="65535"
-                                                Minimum="0"
-                                                Style="{StaticResource MaterialDesignOutlinedNumericUpDown}"
-                                                Value="{Binding ModbusConfig.RegisterStart}" />
-                                        </StackPanel>
-
-                                        <StackPanel Margin="15,0,0,0">
-                                            <TextBlock
-                                                Margin="0,0,0,8"
-                                                FontSize="12"
-                                                FontWeight="SemiBold"
-                                                Text="寄存器长度" />
-                                            <md:NumericUpDown
-                                                Height="40"
-                                                Padding="10"
-                                                Background="#1D2129"
-                                                BorderBrush="#4B5563"
-                                                Maximum="125"
-                                                Minimum="1"
-                                                Style="{StaticResource MaterialDesignOutlinedNumericUpDown}"
-                                                Value="{Binding ModbusConfig.RegisterLength,Mode=OneWay}" />
-                                        </StackPanel>
-                                    </UniformGrid>
-
-                                    <!--  字节序设置  -->
-                                    <StackPanel Margin="0,0,0,20">
-                                        <TextBlock
-                                            Margin="0,0,0,8"
-                                            FontSize="12"
-                                            FontWeight="SemiBold"
-                                            Text="字节序" />
-                                        <StackPanel Orientation="Horizontal">
-                                            <RadioButton
-                                                Margin="0,0,15,0"
-                                                Background="#36CFC9"
-                                                Content="大端 (Big-Endian)"
-                                                Foreground="White"
-                                                GroupName="ByteOrder"
-                                                IsChecked="{Binding ModbusConfig.Endianness, Converter={StaticResource RadioButtonToEnumConverter}, ConverterParameter={x:Static enums:ModbusByteOrder.BigEndian}}" />
-                                            <RadioButton
-                                                Background="#165DFF"
-                                                Content="小端 (Little-Endian)"
-                                                Foreground="White"
-                                                GroupName="ByteOrder"
-                                                IsChecked="{Binding ModbusConfig.Endianness, Converter={StaticResource RadioButtonToEnumConverter}, ConverterParameter={x:Static enums:ModbusByteOrder.LittleEndian}}" />
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <!--  操作按钮  -->
-                                    <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-                                        <Button
-                                            Height="40"
-                                            Margin="0,0,15,0"
-                                            Padding="20,0"
-                                            Background="#36CFC9"
-                                            Command="{Binding SaveModbusConfigCommand}"
-                                            Style="{StaticResource MaterialDesignRaisedDarkButton}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <md:PackIcon
-                                                    Width="16"
-                                                    Height="16"
-                                                    Margin="0,0,8,0"
-                                                    Kind="ContentSave" />
-                                                <TextBlock Text="保存配置" />
-                                            </StackPanel>
-                                        </Button>
-                                        <Button
-                                            Height="40"
-                                            Padding="20,0"
-                                            Background="#343E4E"
-                                            Command="{Binding TestReadCommand}"
-                                            Style="{StaticResource MaterialDesignRaisedDarkButton}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <md:PackIcon
-                                                    Width="16"
-                                                    Height="16"
-                                                    Margin="0,0,8,0"
-                                                    Kind="Play" />
-                                                <TextBlock Text="测试读取" />
-                                            </StackPanel>
-                                        </Button>
-                                    </StackPanel>
-                                </StackPanel>
-
-                                <!--  寄存器映射表  -->
-                                <md:Card
-                                    Grid.Row="2"
-                                    Padding="20"
-                                    Background="#1D2129">
-                                    <StackPanel>
-                                        <DockPanel Margin="0,0,0,15">
-                                            <StackPanel Orientation="Horizontal">
-                                                <md:PackIcon
-                                                    Width="20"
-                                                    Height="20"
-                                                    Margin="0,0,10,0"
-                                                    Foreground="#FAAD14"
-                                                    Kind="Table" />
-                                                <TextBlock
-                                                    FontSize="16"
-                                                    FontWeight="SemiBold"
-                                                    Text="寄存器映射表" />
-                                            </StackPanel>
-                                            <Button
-                                                HorizontalAlignment="Right"
-                                                Background="#165DFF"
-                                                Command="{Binding AddRegisterMappingCommand}"
-                                                Style="{StaticResource MaterialDesignFlatDarkBgButton}">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <md:PackIcon
-                                                        Width="16"
-                                                        Height="16"
-                                                        Margin="0,0,5,0"
-                                                        Kind="Plus" />
-                                                    <TextBlock Text="添加映射" />
-                                                </StackPanel>
-                                            </Button>
-                                        </DockPanel>
-                                        <!--  数据表格  -->
-                                        <DataGrid
-                                            MinHeight="200"
-                                            md:DataGridAssist.SelectedCellBorderBrush="Crimson"
-                                            AutoGenerateColumns="False"
-                                            Background="Transparent"
-                                            BorderBrush="#4B5563"
-                                            BorderThickness="1"
-                                            CanUserAddRows="False"
-                                            CanUserSortColumns="False"
-                                            Foreground="White"
-                                            HeadersVisibility="All"
-                                            IsReadOnly="True"
-                                            ItemsSource="{Binding RegisterMappings}">
-
-                                            <DataGrid.Resources>
-                                                <Style TargetType="DataGridColumnHeader">
+                                        <Style TargetType="DataGridRow">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="Height" Value="60" />
+                                            <Setter Property="Padding" Value="10"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
                                                     <Setter Property="Background" Value="#272E3B" />
                                                     <Setter Property="Foreground" Value="White" />
-                                                    <Setter Property="BorderBrush" Value="#4B5563" />
-                                                    <Setter Property="BorderThickness" Value="0,0,1,1" />
-                                                    <Setter Property="Height" Value="35" />
-                                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
-                                                    <Setter Property="Padding" Value="10,0" />
-                                                </Style>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#3A4556" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
 
-                                                <Style TargetType="DataGridRow">
-                                                    <Setter Property="Background" Value="Transparent" />
-                                                    <Setter Property="BorderBrush" Value="Transparent" />
-                                                    <Setter Property="BorderThickness" Value="0" />
-                                                    <Setter Property="Height" Value="40" />
+                                        <Style TargetType="DataGridCell">
+                                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                            <Setter Property="Padding" Value="8,0" />
+                                        </Style>
+                                    </DataGrid.Resources>
 
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsSelected" Value="True">
-                                                            <Setter Property="Background" Value="#272E3B" />
-                                                            <Setter Property="BorderBrush" Value="#1D2129" />
-                                                            <Setter Property="Foreground" Value="White" />
-                                                        </Trigger>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#3A4556" />
-                                                            <Setter Property="BorderBrush" Value="#4B5563" />
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
+                                    <DataGrid.GridLinesVisibility>All</DataGrid.GridLinesVisibility>
+                                    <DataGrid.HorizontalGridLinesBrush>#4B5563</DataGrid.HorizontalGridLinesBrush>
+                                    <DataGrid.VerticalGridLinesBrush>#4B5563</DataGrid.VerticalGridLinesBrush>
 
-                                                <Style TargetType="DataGridCell">
+                                    <DataGrid.Columns>
+
+                                        <DataGridTemplateColumn Width="1.2*" Header="数据点名称/Code">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0">
+                                                        <md:PackIcon
+                                            Width="16"
+                                            Height="16"
+                                            Margin="0,0,5,0"
+                                            Foreground="#FFC300"
+                                            Kind="ChartLineVariant" />
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" FontWeight="SemiBold"/>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding Code, StringFormat=' ({0})'}" FontSize="11" Foreground="#9CA3AF" Margin="5,0,0,0" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <DataGridTextColumn
+                                            Width="2*"
+                                            Binding="{Binding ModbusConfig.Description}"
+                                            Header="Modbus地址信息" >       
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                    <Setter Property="FontFamily" Value="Consolas, Courier New" />
+                                                    <Setter Property="Text" Value="{Binding Description}" />
                                                     <Setter Property="HorizontalAlignment" Value="Center" />
                                                     <Setter Property="VerticalAlignment" Value="Center" />
-                                                    <Setter Property="BorderThickness" Value="0" />
-                                                    <Setter Property="Padding" Value="8,6" />
                                                 </Style>
-                                            </DataGrid.Resources>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
 
-                                            <DataGrid.GridLinesVisibility>All</DataGrid.GridLinesVisibility>
-                                            <DataGrid.HorizontalGridLinesBrush>#4B5563</DataGrid.HorizontalGridLinesBrush>
-                                            <DataGrid.VerticalGridLinesBrush>#4B5563</DataGrid.VerticalGridLinesBrush>
+                                        
+                                        <DataGridTextColumn
+                            Width="0.8*"
+                            Binding="{Binding CollectInterval, StringFormat={}{0} S}"
+                            Header="间隔" 
+                           >
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                    <Setter Property="HorizontalAlignment" Value="Center" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
 
-                                            <DataGrid.Columns>
-                                                <DataGridTemplateColumn Width="*" Header="数据类型">
-                                                    <DataGridTemplateColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <StackPanel Orientation="Horizontal">
-                                                                <md:PackIcon
-                                                                    Width="16"
-                                                                    Height="16"
-                                                                    Margin="0,0,5,0"
-                                                                    Foreground="#FF4D4F"
-                                                                    Kind="Thermometer" />
-                                                                <TextBlock VerticalAlignment="Center" Text="{Binding DataType}" />
-                                                            </StackPanel>
-                                                        </DataTemplate>
-                                                    </DataGridTemplateColumn.CellTemplate>
-                                                </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Width="1.5*" Header="告警 (上下限)">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                            <md:PackIcon Kind="ArrowUp" Width="12" Height="12" Foreground="#FF4D4F" VerticalAlignment="Center" />
+                                                            <TextBlock Margin="2,0,5,0" Text="{Binding UpperLimit}" />
+                                                            <md:PackIcon Kind="ArrowDown" Width="12" Height="12" Foreground="#49CC51" VerticalAlignment="Center" />
+                                                            <TextBlock Margin="2,0,0,0" Text="{Binding LowerLimit}" FontWeight="SemiBold" />
+                                                            <TextBlock Margin="2,0,0,0" FontSize="10" Foreground="#9CA3AF" Text="{Binding Unit}" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                        <TextBlock FontSize="10" Foreground="#9CA3AF" Text="{Binding AlarmDelay, StringFormat='延迟：{0}s'}" HorizontalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
 
-                                                <DataGridTextColumn
-                                                    Width="*"
-                                                    Binding="{Binding Address}"
-                                                    Header="寄存器地址">
-                                                    <DataGridTextColumn.ElementStyle>
-                                                        <Style TargetType="TextBlock">
-                                                            <Setter Property="FontFamily" Value="Consolas, Courier New" />
-                                                            <Setter Property="Text" Value="{Binding Address, StringFormat=0x{0:X4}}" />
-                                                            <Setter Property="HorizontalAlignment" Value="Center" />
-                                                            <Setter Property="VerticalAlignment" Value="Center" />
-                                                        </Style>
-                                                    </DataGridTextColumn.ElementStyle>
-                                                </DataGridTextColumn>
+                                        <DataGridTemplateColumn Width="0.8*" Header="启用告警">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                                        <Ellipse
+                                            Width="10"
+                                            Height="10"
+                                            Margin="0,0,5,0"
+                                            VerticalAlignment="Center">
+                                                            <Ellipse.Style>
+                                                                <Style TargetType="Ellipse">
+                                                                    <Setter Property="Fill" Value="#FF4D4F" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding EnableAlarm}" Value="True">
+                                                                            <Setter Property="Fill" Value="#49CC51" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Ellipse.Style>
+                                                        </Ellipse>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding EnableAlarm}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
 
-                                                <DataGridTextColumn
-                                                    Width="*"
-                                                    Binding="{Binding Format}"
-                                                    Header="数据格式" />
-                                                <DataGridTextColumn
-                                                    Width="0.8*"
-                                                    Binding="{Binding CollectInterval}"
-                                                    Header="间隔" />
-
-                                                <DataGridTemplateColumn Width="1.2*" Header="告警阈值 (上下限)">
-                                                    <DataGridTemplateColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Center">
-                                                                <md:PackIcon Kind="ArrowUp" Width="12" Height="12" Foreground="#FF4D4F" VerticalAlignment="Center" />
-                                                                <TextBlock Margin="2,0,5,0" Text="{Binding UpperLimit}" />
-                                                                <md:PackIcon Kind="ArrowDown" Width="12" Height="12" Foreground="#49CC51" VerticalAlignment="Center" />
-                                                                <TextBlock Margin="2,0,0,0" Text="{Binding LowerLimit}" />
-                                                                <TextBlock Margin="2,0,0,0" FontSize="10" Foreground="#9CA3AF" Text="{Binding Unit}" />
-                                                            </StackPanel>
-                                                        </DataTemplate>
-                                                    </DataGridTemplateColumn.CellTemplate>
-                                                </DataGridTemplateColumn>
-
-                                                <DataGridTemplateColumn Width="0.8*" Header="启用告警">
-                                                    <DataGridTemplateColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                                                <Ellipse 
-                            Width="10" 
-                            Height="10" 
-                            Margin="0,0,5,0"
-                            VerticalAlignment="Center">
-                                                                    <Ellipse.Style>
-                                                                        <Style TargetType="Ellipse">
-                                                                            <Setter Property="Fill" Value="#FF4D4F" />
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding EnableAlarm}" Value="True">
-                                                                                    <Setter Property="Fill" Value="#49CC51" />
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </Ellipse.Style>
-                                                                </Ellipse>
-                                                                <TextBlock VerticalAlignment="Center" Text="{Binding EnableAlarm}" />
-                                                            </StackPanel>
-                                                        </DataTemplate>
-                                                    </DataGridTemplateColumn.CellTemplate>
-                                                </DataGridTemplateColumn>
-
-                                                <DataGridTemplateColumn Width="120" Header="操作">
-                                                    <DataGridTemplateColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                                                <Button
-                                                                    Margin="2"
-                                                                    Command="{Binding EditCommand}"
-                                                                    Foreground="#165DFF"
-                                                                    Style="{StaticResource MaterialDesignToolButton}"
-                                                                    ToolTip="编辑">
-                                                                    <md:PackIcon
-                                                                        Width="16"
-                                                                        Height="16"
-                                                                        Kind="Edit" />
-                                                                </Button>
-                                                                <Button
-                                                                    Margin="2"
-                                                                    Command="{Binding DeleteCommand}"
-                                                                    Foreground="#FF4D4F"
-                                                                    Style="{StaticResource MaterialDesignToolButton}"
-                                                                    ToolTip="删除">
-                                                                    <md:PackIcon
-                                                                        Width="16"
-                                                                        Height="16"
-                                                                        Kind="Delete" />
-                                                                </Button>
-                                                            </StackPanel>
-                                                        </DataTemplate>
-                                                    </DataGridTemplateColumn.CellTemplate>
-                                                </DataGridTemplateColumn>
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-                                    </StackPanel>
-                                </md:Card>
-                            </Grid>
+                                        <DataGridTemplateColumn Width="100" Header="操作">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                                        <Button
+                                            Margin="2"
+                                            Command="{Binding DataContext.EditCommand,RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"
+                                            Foreground="#165DFF"
+                                            Style="{StaticResource MaterialDesignToolButton}"
+                                            ToolTip="编辑数据点">
+                                                            <md:PackIcon
+                                                Width="16"
+                                                Height="16"
+                                                Kind="Edit" />
+                                                        </Button>
+                                                        <Button
+                                            Margin="2"
+                                            Command="{Binding DataContext.DeleteCommand,RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"
+                                            Foreground="#FF4D4F"
+                                            Style="{StaticResource MaterialDesignToolButton}"
+                                            ToolTip="删除映射">
+                                                            <md:PackIcon
+                                                Width="16"
+                                                Height="16"
+                                                Kind="Delete" />
+                                                        </Button>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </ScrollViewer>
                         </md:Card>
-                    </ScrollViewer>
+                    </Grid>
                 </TabItem>
             </TabControl>
         </Grid>
