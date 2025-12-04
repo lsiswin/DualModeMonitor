@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.3.11222.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DualModeMonitorSystem", "DualModeMonitorSystem\DualModeMonitorSystem.csproj", "{C367BC25-640A-4E4C-BD00-77FB8D9282D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorSystem", "DualModeMonitorSystem\MonitorSystem.csproj", "{C367BC25-640A-4E4C-BD00-77FB8D9282D4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorApi", "MonitorApi\MonitorApi.csproj", "{598396B6-6EC8-4933-BA69-2316753ACC2E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorLibrary", "MonitorLibrary\MonitorLibrary.csproj", "{9C2E5DED-C937-424C-8C89-BCAFE1F65AB0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpcUaTempSensorServer", "OpcUaTempSensorServer\OpcUaTempSensorServer.csproj", "{7E1270DB-ADE9-4F57-9C6A-B1688E00A654}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpcUaMonitorServer", "OpcUaTempSensorServer\OpcUaMonitorServer.csproj", "{7E1270DB-ADE9-4F57-9C6A-B1688E00A654}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorRabbitMQService", "MonitorRabbitMQService\MonitorRabbitMQService.csproj", "{998350BC-B629-4096-8DD5-E24668E2AEEE}"
 EndProject
