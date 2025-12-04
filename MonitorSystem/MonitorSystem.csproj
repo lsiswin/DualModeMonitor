@@ -12,7 +12,6 @@
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-rc1" />
     <PackageReference Include="MaterialDesignColors" Version="5.3.0" />
     <PackageReference Include="MaterialDesignThemes" Version="5.3.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.10" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
     <PackageReference Include="System.IO.Ports" Version="9.0.10" />
@@ -22,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MonitorLibrary\MonitorLibrary.csproj" />
+    <ProjectReference Include="..\MonitorRabbitMQService\MonitorRabbitMQService.csproj" />
   </ItemGroup>
 
 </Project>

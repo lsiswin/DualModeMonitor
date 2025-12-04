@@ -9,10 +9,9 @@ using MonitorLibrary.HttpService;
 using MonitorLibrary.Models;
 using MonitorLibrary.Reactive;
 using Newtonsoft.Json;
-using OpcUaTempSensorServer.Configuration;
-using OpcUaTempSensorServer.Model;
+using OpcUaMonitorServer.Model;
 
-namespace OpcUaTempSensorServer.Services
+namespace OpcUaMonitorServer.Services
 {
     /// <summary>
     /// 设备管理服务 - 通过API查询设备和数据点

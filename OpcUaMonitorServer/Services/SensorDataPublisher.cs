@@ -9,7 +9,7 @@ using MonitorRabbitMQService.Models;
 using MonitorRabbitMQService.Services;
 using Opc.Ua;
 
-namespace OpcUaTempSensorServer.Services
+namespace OpcUaMonitorServer.Services
 {
     /// <summary>
     /// 传感器数据发布服务

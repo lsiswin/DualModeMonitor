@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MonitorLibrary.Models;
 
-namespace OpcUaTempSensorServer.Model
+namespace OpcUaMonitorServer.Model
 {
     public class DeviceInfo
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpcUaTempSensorServer.Configuration
+namespace OpcUaMonitorServer.Configuration
 {
     public class OpcServerConfiguration
     {

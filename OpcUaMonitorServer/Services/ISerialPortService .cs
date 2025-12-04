@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpcUaTempSensorServer.Services
+namespace OpcUaMonitorServer.Services
 {
     /// <summary>
     /// 串口服务接口，定义串口操作的基本功能

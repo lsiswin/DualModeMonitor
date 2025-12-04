@@ -11,10 +11,10 @@ using MonitorLibrary.Models;
 using MonitorLibrary.Reactive;
 using MonitorRabbitMQService.Models;
 using Newtonsoft.Json;
-using OpcUaTempSensorServer.Configuration;
-using OpcUaTempSensorServer.Model;
+using OpcUaMonitorServer.Configuration;
+using OpcUaMonitorServer.Model;
 
-namespace OpcUaTempSensorServer.Services
+namespace OpcUaMonitorServer.Services
 {
     /// <summary>
     /// 数据采集服务 - 通过Modbus/SerialPort读取传感器数据

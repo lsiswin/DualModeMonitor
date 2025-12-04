@@ -167,7 +167,7 @@ namespace MonitorRabbitMQService.Services
         public async Task PublishAlarmAsync<T>(T message)
         {
             await PublishAsync(
-                exchange: _exchangeConfig.DataTopic,
+                exchange: _exchangeConfig.AlarmTopic,
                 message: message,
                 routingKey: _routingKeyConfig.Alarm
             );
@@ -185,7 +185,7 @@ namespace MonitorRabbitMQService.Services
         public async Task PublishDeviceStatusAsync<T>(T message)
         {
             await PublishAsync(
-                exchange: _exchangeConfig.DataTopic,
+                exchange: _exchangeConfig.CommandDirect,
                 message: message,
                 routingKey: _routingKeyConfig.DeviceStatus
             );
@@ -194,7 +194,7 @@ namespace MonitorRabbitMQService.Services
         public async Task PublishOpcDataAsync<T>(T message)
         {
             await PublishAsync(
-                exchange: _exchangeConfig.DataTopic,
+                exchange: _exchangeConfig.OpcTopic,
                 message: message,
                 routingKey: _routingKeyConfig.OpcData
             );

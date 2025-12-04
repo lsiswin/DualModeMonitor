@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Opc.Ua;
 
-namespace OpcUaTempSensorServer.Model
+namespace OpcUaMonitorServer.Model
 {
     /// <summary>
     /// 设备节点信息

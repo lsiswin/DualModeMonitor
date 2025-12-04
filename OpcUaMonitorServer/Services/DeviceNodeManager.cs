@@ -9,9 +9,9 @@ using MonitorLibrary.Models;
 using MonitorLibrary.Reactive;
 using Opc.Ua;
 using Opc.Ua.Server;
-using OpcUaTempSensorServer.Model;
+using OpcUaMonitorServer.Model;
 
-namespace OpcUaTempSensorServer.Services
+namespace OpcUaMonitorServer.Services
 {
     /// <summary>
     /// 设备节点管理器 - 动态创建传感器节点

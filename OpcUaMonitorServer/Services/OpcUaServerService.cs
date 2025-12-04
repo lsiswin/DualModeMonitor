@@ -4,10 +4,10 @@ using MonitorLibrary.Reactive;
 using Opc.Ua;
 using Opc.Ua.Configuration;
 using Opc.Ua.Server;
-using OpcUaTempSensorServer.Configuration;
-using OpcUaTempSensorServer.Model;
+using OpcUaMonitorServer.Configuration;
+using OpcUaMonitorServer.Model;
 
-namespace OpcUaTempSensorServer.Services
+namespace OpcUaMonitorServer.Services
 {
     /// <summary>
     /// OPC UA Server服务接口

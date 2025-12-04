@@ -7,6 +7,7 @@ using DualModeMonitorSystem.ViewModels;
 using DualModeMonitorSystem.Views;
 using Microsoft.Extensions.Configuration;
 using MonitorLibrary.HttpService;
+using MonitorRabbitMQService.Services;
 using Prism.Ioc;
 
 namespace DualModeMonitorSystem
@@ -54,6 +55,7 @@ namespace DualModeMonitorSystem
             container.RegisterDialog<AddDeviceDialog, AddDeviceDialogViewModel>("AddDeviceDialog");
             container.RegisterDialog<ConfirmDialog, ConfirmDialogViewModel>("ConfirmDialog");
 
+            container.RegisterScoped<IRabbitMQConnectionService, RabbitMQConnectionService>();
             // 注册HttpService，通常注册为单例，因为HttpClient最好复用
             container.RegisterSingleton<IHttpService, HttpService>();
             container.Register<IDeviceService, DeviceService>();

@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MonitorLibrary.Reactive;
 
-namespace OpcUaTempSensorServer.Services
+namespace OpcUaMonitorServer.Services
 {
     /// <summary>
     /// 串口服务实现类，基于System.IO.Ports.SerialPort封装，提供响应式接口

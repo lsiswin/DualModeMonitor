@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MonitorLibrary.Models;
 
-namespace OpcUaTempSensorServer.Services
+namespace OpcUaMonitorServer.Services
 {
     /// <summary>
     /// Modbus服务接口，定义Modbus RTU协议的基本操作

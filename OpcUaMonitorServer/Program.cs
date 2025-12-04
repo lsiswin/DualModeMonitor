@@ -3,8 +3,8 @@ using Microsoft.Extensions.Hosting;
 using MonitorLibrary.HttpService;
 using MonitorRabbitMQService.Configuration;
 using MonitorRabbitMQService.Services;
-using OpcUaTempSensorServer.Configuration;
-using OpcUaTempSensorServer.Services;
+using OpcUaMonitorServer.Configuration;
+using OpcUaMonitorServer.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
 

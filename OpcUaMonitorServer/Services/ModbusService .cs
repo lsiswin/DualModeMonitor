@@ -11,7 +11,7 @@ using MonitorLibrary.Models;
 using MonitorLibrary.Models.Enums;
 using MonitorLibrary.Reactive;
 
-namespace OpcUaTempSensorServer.Services
+namespace OpcUaMonitorServer.Services
 {
     /// <summary>
     /// Modbus服务实现类，基于串口服务实现Modbus RTU协议
