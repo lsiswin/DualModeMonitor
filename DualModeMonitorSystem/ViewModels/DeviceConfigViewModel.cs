@@ -17,7 +17,6 @@ namespace DualModeMonitorSystem.ViewModels
     {
         private readonly IDeviceService deviceService;
         private readonly IDialogService dialogService;
-        private readonly IModbusService modbusService;
         private HumitureDevices selectDevice;
 
         private SerialPortConfig serialPort;
@@ -241,15 +240,10 @@ namespace DualModeMonitorSystem.ViewModels
         public DelegateCommand<DataPoint> DeleteCommand { get; private set; }
         public object IsEdit { get; private set; }
 
-        public DeviceConfigViewModel(
-            IDeviceService deviceService,
-            IDialogService dialogService,
-            IModbusService modbusService
-        )
+        public DeviceConfigViewModel(IDeviceService deviceService, IDialogService dialogService)
         {
             this.deviceService = deviceService;
             this.dialogService = dialogService;
-            this.modbusService = modbusService;
             AddRegisterMappingCommand = new DelegateCommand(AddRegisterMapping);
             AddDeviceCommand = new DelegateCommand(ExecuteAddDevice);
             TestConnectionCommand = new DelegateCommand(TestConnection);
@@ -269,21 +263,21 @@ namespace DualModeMonitorSystem.ViewModels
             }
             else
             {
-                bool isSuccess = await modbusService.ConnectAsync(SelectDevice.SerialPortConfig);
-                if (isSuccess)
-                {
-                    dialogService.ShowDialog(
-                        "MessageDialog",
-                        new DialogParameters { { "message", "连接成功！" } }
-                    );
-                }
-                else
-                {
-                    dialogService.ShowDialog(
-                        "MessageDialog",
-                        new DialogParameters { { "message", "连接失败，请检查配置！" } }
-                    );
-                }
+                //bool isSuccess = await modbusService.ConnectAsync(SelectDevice.SerialPortConfig);
+                //if (isSuccess)
+                //{
+                //    dialogService.ShowDialog(
+                //        "MessageDialog",
+                //        new DialogParameters { { "message", "连接成功！" } }
+                //    );
+                //}
+                //else
+                //{
+                //    dialogService.ShowDialog(
+                //        "MessageDialog",
+                //        new DialogParameters { { "message", "连接失败，请检查配置！" } }
+                //    );
+                //}
             }
         }
 
@@ -432,39 +426,38 @@ namespace DualModeMonitorSystem.ViewModels
         {
             try
             {
-                // Ensure connection
-                if (!modbusService.IsConnected)
-                {
-                    var ok = await modbusService.ConnectAsync(SelectDevice?.SerialPortConfig);
-                    if (!ok)
-                    {
-                        dialogService.ShowDialog(
-                            "MessageDialog",
-                            new DialogParameters { { "message", "连接设备失败，无法读取" } }
-                        );
-                        return;
-                    }
-                }
+                //    if (!modbusService.IsConnected)
+                //    {
+                //        var ok = await modbusService.ConnectAsync(SelectDevice?.SerialPortConfig);
+                //        if (!ok)
+                //        {
+                //            dialogService.ShowDialog(
+                //                "MessageDialog",
+                //                new DialogParameters { { "message", "连接设备失败，无法读取" } }
+                //            );
+                //            return;
+                //        }
+                //    }
 
-                var cfg = SelectDevice.DataPoints.FirstOrDefault()?.ModbusConfig;
-                ushort start = cfg.RegisterStart;
-                int regCount = Math.Max(1, cfg.RegisterLength / 2);
-                var regs = await modbusService.ReadHoldingRegistersAsync(start, (ushort)regCount);
-                if (regs == null || regs.Length == 0)
-                {
-                    dialogService.ShowDialog(
-                        "MessageDialog",
-                        new DialogParameters { { "message", "未收到响应" } }
-                    );
-                    return;
-                }
-                else
-                {
-                    dialogService.ShowDialog(
-                        "MessageDialog",
-                        new DialogParameters { { "message", $"读取结果: {regs.FirstOrDefault()}" } }
-                    );
-                }
+                //    var cfg = SelectDevice.DataPoints.FirstOrDefault()?.ModbusConfig;
+                //    ushort start = cfg.RegisterStart;
+                //    int regCount = Math.Max(1, cfg.RegisterLength / 2);
+                //    var regs = await modbusService.ReadHoldingRegistersAsync(start, (ushort)regCount);
+                //    if (regs == null || regs.Length == 0)
+                //    {
+                //        dialogService.ShowDialog(
+                //            "MessageDialog",
+                //            new DialogParameters { { "message", "未收到响应" } }
+                //        );
+                //        return;
+                //    }
+                //    else
+                //    {
+                //        dialogService.ShowDialog(
+                //            "MessageDialog",
+                //            new DialogParameters { { "message", $"读取结果: {regs.FirstOrDefault()}" } }
+                //        );
+                //    }
             }
             catch (Exception ex)
             {

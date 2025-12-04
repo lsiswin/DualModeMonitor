@@ -41,6 +41,16 @@ namespace MonitorLibrary.Models
         }
 
         /// <summary>
+        /// 设备地址（从机ID）
+        /// </summary>
+        public byte _deviceAddress;
+        public byte DeviceAddress
+        {
+            get => _deviceAddress;
+            set => SetProperty(ref _deviceAddress, value);
+        }
+
+        /// <summary>
         /// 串口号（如COM1、COM3）
         /// </summary>
         [Required]

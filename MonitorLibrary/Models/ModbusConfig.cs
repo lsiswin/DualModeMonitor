@@ -11,10 +11,6 @@ public class ModbusConfig : BindableBase
     public int DataPointId { get; set; }
 
     // --- Modbus基础参数 ---
-    /// <summary>
-    /// 设备地址（从机ID）
-    /// </summary>
-    public byte DeviceAddress { get; set; } = 1;
 
     /// <summary>
     /// 寄存器起始地址
@@ -57,8 +53,7 @@ public class ModbusConfig : BindableBase
     public string RegisterStartHex => $"0x{RegisterStart:X4}";
 
     [NotMapped]
-    public string Description =>
-        $"从机:{DeviceAddress} 功能:{(byte)FunctionCode:X2} 地址:{RegisterStartHex}";
+    public string Description => $"功能:{(byte)FunctionCode:X2} 地址:{RegisterStartHex}";
 
     // --- 通用方法 ---
     public decimal ToActual(decimal raw) => raw * DataMultiplier + Offset;

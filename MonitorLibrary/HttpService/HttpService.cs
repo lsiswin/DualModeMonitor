@@ -7,19 +7,22 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace DualModeMonitorSystem.Services
+namespace MonitorLibrary.HttpService
 {
     public class HttpService : IHttpService
     {
         private readonly HttpClient _httpClient;
         private string _baseAddress;
+
         public HttpService()
         {
             _httpClient = new HttpClient();
             _httpClient.Timeout = TimeSpan.FromSeconds(30);
             _httpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
+                new MediaTypeWithQualityHeaderValue("application/json")
+            );
         }
+
         public async Task<T> DeleteAsync<T>(string endpoint)
         {
             var response = await _httpClient.DeleteAsync(GetFullUrl(endpoint));
@@ -28,7 +31,7 @@ namespace DualModeMonitorSystem.Services
 
         public async Task<T> GetAsync<T>(string endpoint)
         {
-            var response = await  _httpClient.GetAsync(GetFullUrl(endpoint));
+            var response = await _httpClient.GetAsync(GetFullUrl(endpoint));
             return await HandleResponse<T>(response);
         }
 
@@ -38,6 +41,7 @@ namespace DualModeMonitorSystem.Services
             var response = await _httpClient.PostAsync(GetFullUrl(endpoint), content);
             return await HandleResponse<T>(response);
         }
+
         /// <summary>
         /// 解析完整的URL地址
         /// </summary>
@@ -50,12 +54,14 @@ namespace DualModeMonitorSystem.Services
 
             return $"{_baseAddress}{endpoint.TrimStart('/')}";
         }
+
         public async Task<T> PutAsync<T>(string endpoint, object data)
         {
             var content = CreateJsonContent(data);
             var response = await _httpClient.PutAsync(GetFullUrl(endpoint), content);
             return await HandleResponse<T>(response);
         }
+
         /// <summary>
         /// 设置认证令牌
         /// </summary>
@@ -70,10 +76,13 @@ namespace DualModeMonitorSystem.Services
             }
             else
             {
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", token);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                    "Bearer",
+                    token
+                );
             }
         }
+
         /// <summary>
         /// 设置基础地址
         /// </summary>
@@ -84,6 +93,7 @@ namespace DualModeMonitorSystem.Services
             if (!_baseAddress.EndsWith("/"))
                 _baseAddress += "/";
         }
+
         /// <summary>
         /// 创建JSON内容
         /// </summary>
@@ -94,6 +104,7 @@ namespace DualModeMonitorSystem.Services
             var json = JsonConvert.SerializeObject(data);
             return new StringContent(json, Encoding.UTF8, "application/json");
         }
+
         /// <summary>
         /// 处理HTTP响应
         /// </summary>
@@ -112,8 +123,9 @@ namespace DualModeMonitorSystem.Services
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 throw new HttpRequestException(
-                    $"HTTP request failed with status code {response.StatusCode}. " +
-                    $"Response: {errorContent}");
+                    $"HTTP request failed with status code {response.StatusCode}. "
+                        + $"Response: {errorContent}"
+                );
             }
         }
     }

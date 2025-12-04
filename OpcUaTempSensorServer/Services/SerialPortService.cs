@@ -6,8 +6,9 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
+using MonitorLibrary.Reactive;
 
-namespace DualModeMonitorSystem.Services
+namespace OpcUaTempSensorServer.Services
 {
     /// <summary>
     /// 串口服务实现类，基于System.IO.Ports.SerialPort封装，提供响应式接口
@@ -16,7 +17,7 @@ namespace DualModeMonitorSystem.Services
     {
         private SerialPort _serialPort; // 底层串口对象
         private readonly Subject<byte[]> _dataReceivedSubject; // 数据接收事件主题
-        private readonly Subject<string> _statusChangedSubject; // 状态变更事件主题
+        private readonly Subject<bool> _statusChangedSubject; // 状态变更事件主题
         private readonly CancellationTokenSource _cancellationTokenSource; // 用于取消异步任务的令牌源
         private bool _disposed = false; // 释放标志，防止重复释放
 
@@ -28,7 +29,12 @@ namespace DualModeMonitorSystem.Services
         /// <summary>
         /// 状态变更事件流（对外暴露为只读可观察对象）
         /// </summary>
-        public IObservable<string> StatusChanged => _statusChangedSubject.AsObservable();
+        public IObservable<bool> StatusChanged => _statusChangedSubject.AsObservable();
+
+        /// <summary>
+        /// 日志记录器
+        /// </summary>
+        private readonly ReactiveLogger _logger;
 
         /// <summary>
         /// 串口是否打开
@@ -43,12 +49,15 @@ namespace DualModeMonitorSystem.Services
         /// <summary>
         /// 构造函数，初始化事件主题和取消令牌
         /// </summary>
-        public SerialPortService()
+        public SerialPortService(ReactiveLogger logger)
         {
             _dataReceivedSubject = new Subject<byte[]>();
-            _statusChangedSubject = new Subject<string>();
+            _statusChangedSubject = new Subject<bool>();
             _cancellationTokenSource = new CancellationTokenSource();
+            _logger = logger;
         }
+
+        public SerialPortService() { }
 
         /// <summary>
         /// 异步打开串口
@@ -59,8 +68,13 @@ namespace DualModeMonitorSystem.Services
         /// <param name="dataBits">数据位</param>
         /// <param name="stopBits">停止位</param>
         /// <returns>打开成功返回true</returns>
-        public async Task<bool> OpenAsync(string portName, int baudRate = 9600, Parity parity = Parity.None,
-                                        int dataBits = 8, StopBits stopBits = StopBits.One)
+        public async Task<bool> OpenAsync(
+            string portName,
+            int baudRate = 9600,
+            Parity parity = Parity.None,
+            int dataBits = 8,
+            StopBits stopBits = StopBits.One
+        )
         {
             try
             {
@@ -70,19 +84,19 @@ namespace DualModeMonitorSystem.Services
 
                 await Task.Run(() =>
                 {
-                        _serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits)
-                        {
-                            ReadTimeout = 1000,
-                            WriteTimeout = 1000,
-                            Encoding = Encoding.UTF8
-                        };
+                    _serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits)
+                    {
+                        ReadTimeout = 1000,
+                        WriteTimeout = 1000,
+                        Encoding = Encoding.UTF8,
+                    };
 
-                        _serialPort.DataReceived += OnDataReceived;
-                        _serialPort.ErrorReceived += OnErrorReceived;
-                        _serialPort.Open(); // 这个同步调用在后台线程执行
-                    
+                    _serialPort.DataReceived += OnDataReceived;
+                    _serialPort.ErrorReceived += OnErrorReceived;
+                    _serialPort.Open(); // 这个同步调用在后台线程执行
                 });
-                _statusChangedSubject.OnNext($"串口 {portName} 打开成功");
+                _statusChangedSubject.OnNext(true);
+                _logger.LogInformation($"串口 {portName} 打开成功");
 
                 // 启动后台数据读取任务（使用独立线程避免阻塞）
                 _ = Task.Run(async () => await ReadDataAsync(_cancellationTokenSource.Token));
@@ -91,7 +105,7 @@ namespace DualModeMonitorSystem.Services
             }
             catch (Exception ex)
             {
-                _statusChangedSubject.OnNext($"打开串口失败: {ex.Message}");
+                _logger.LogError($"打开串口失败: {ex.Message}", ex);
                 return false;
             }
         }
@@ -110,13 +124,14 @@ namespace DualModeMonitorSystem.Services
                     if (_serialPort.IsOpen)
                     {
                         _serialPort.Close();
-                        _statusChangedSubject.OnNext($"串口 {_serialPort.PortName} 已关闭");
+                        _statusChangedSubject.OnNext(false);
+                        _logger.LogInformation($"串口 {_serialPort.PortName} 关闭成功");
                     }
                 });
             }
             catch (Exception ex)
             {
-                _statusChangedSubject.OnNext($"关闭串口失败: {ex.Message}");
+                _logger.LogError($"关闭串口失败: {ex.Message}", ex);
             }
             finally
             {
@@ -153,7 +168,7 @@ namespace DualModeMonitorSystem.Services
             }
             catch (Exception ex)
             {
-                _statusChangedSubject.OnNext($"发送数据失败: {ex.Message}");
+                _logger.LogError($"发送数据失败: {ex.Message}", ex);
                 return false;
             }
         }
@@ -182,7 +197,8 @@ namespace DualModeMonitorSystem.Services
             try
             {
                 // 校验串口状态
-                if (_serialPort?.IsOpen != true) return;
+                if (_serialPort?.IsOpen != true)
+                    return;
 
                 // 读取缓冲区中的所有字节
                 var bytesToRead = _serialPort.BytesToRead;
@@ -196,7 +212,7 @@ namespace DualModeMonitorSystem.Services
             }
             catch (Exception ex)
             {
-                _statusChangedSubject.OnNext($"接收数据错误: {ex.Message}");
+                _logger.LogError($"接收数据错误: {ex.Message}");
             }
         }
 
@@ -207,7 +223,7 @@ namespace DualModeMonitorSystem.Services
         /// <param name="e">事件参数（包含错误类型）</param>
         private void OnErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
-            _statusChangedSubject.OnNext($"串口错误: {e.EventType}");
+            _logger.LogError($"串口错误: {e.EventType}");
         }
 
         /// <summary>
@@ -231,7 +247,7 @@ namespace DualModeMonitorSystem.Services
                 }
                 catch (Exception ex)
                 {
-                    _statusChangedSubject.OnNext($"数据读取任务错误: {ex.Message}");
+                    _logger.LogError($"数据读取任务错误: {ex.Message}");
                 }
             }
         }

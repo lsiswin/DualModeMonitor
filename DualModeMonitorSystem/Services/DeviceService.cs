@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MonitorLibrary.HttpService;
 using MonitorLibrary.Models;
 using MonitorLibrary.Models.Enums;
 
@@ -16,9 +17,13 @@ namespace DualModeMonitorSystem.Services
         {
             this._httpService = httpService;
         }
+
         public async Task<ApiResponse<HumitureDevices>> CreateDeviceAsync(HumitureDevices device)
         {
-            return await _httpService.PostAsync <ApiResponse<HumitureDevices>>("/api/devices", device);
+            return await _httpService.PostAsync<ApiResponse<HumitureDevices>>(
+                "/api/devices",
+                device
+            );
         }
 
         public async Task<ApiResponse<bool>> DeleteDeviceAsync(int id)
@@ -43,27 +48,40 @@ namespace DualModeMonitorSystem.Services
 
         public async Task<ApiResponse<HumitureDevices>> UpdateDeviceAsync(HumitureDevices device)
         {
-            return await _httpService.PutAsync<ApiResponse<HumitureDevices>>($"/api/devices/{device.Id}", device);
+            return await _httpService.PutAsync<ApiResponse<HumitureDevices>>(
+                $"/api/devices/{device.Id}",
+                device
+            );
         }
 
         public async Task<ApiResponse<List<DataPoint>>> GetDataPointByDevice(int id)
         {
-            return await _httpService.GetAsync<ApiResponse<List<DataPoint>>>($"/api/DataPoint/GetDataPointsByDeviceId/{id}");
+            return await _httpService.GetAsync<ApiResponse<List<DataPoint>>>(
+                $"/api/DataPoint/GetDataPointsByDeviceId/{id}"
+            );
         }
 
         public async Task<ApiResponse<DataPoint>> UpdateDataPointAsync(DataPoint dataPoint)
         {
-            return await _httpService.PutAsync<ApiResponse<DataPoint>>($"/api/DataPoint/UpdateDataPoint/{dataPoint.Id}", dataPoint);
+            return await _httpService.PutAsync<ApiResponse<DataPoint>>(
+                $"/api/DataPoint/UpdateDataPoint/{dataPoint.Id}",
+                dataPoint
+            );
         }
 
         public async Task<ApiResponse<bool>> DeleteDataPointAsync(int id)
         {
-            return await _httpService.DeleteAsync<ApiResponse<bool>>($"/api/DataPoint/DeleteDataPoint/{id}");
+            return await _httpService.DeleteAsync<ApiResponse<bool>>(
+                $"/api/DataPoint/DeleteDataPoint/{id}"
+            );
         }
 
         public async Task<ApiResponse<DataPoint>> CreateDataPointAsync(DataPoint newDataPoint)
         {
-            return await _httpService.PostAsync<ApiResponse<DataPoint>>($"/api/DataPoint/CreateDataPoint", newDataPoint);
+            return await _httpService.PostAsync<ApiResponse<DataPoint>>(
+                $"/api/DataPoint/CreateDataPoint",
+                newDataPoint
+            );
         }
     }
 }

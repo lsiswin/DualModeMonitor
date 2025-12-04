@@ -9,11 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="MesService\" />
-    <Folder Include="static\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-rc1" />
     <PackageReference Include="MaterialDesignColors" Version="5.3.0" />
     <PackageReference Include="MaterialDesignThemes" Version="5.3.0" />

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DualModeMonitorSystem.Services
+namespace OpcUaTempSensorServer.Services
 {
     /// <summary>
     /// 串口服务接口，定义串口操作的基本功能
@@ -20,7 +20,7 @@ namespace DualModeMonitorSystem.Services
         /// <summary>
         /// 状态变更事件流，当串口状态变化时触发（如打开、关闭、错误等）
         /// </summary>
-        IObservable<string> StatusChanged { get; }
+        IObservable<bool> StatusChanged { get; }
 
         /// <summary>
         /// 串口是否处于打开状态
@@ -41,8 +41,13 @@ namespace DualModeMonitorSystem.Services
         /// <param name="dataBits">数据位（默认8位）</param>
         /// <param name="stopBits">停止位（默认1位）</param>
         /// <returns>打开成功返回true，否则返回false</returns>
-        Task<bool> OpenAsync(string portName, int baudRate = 9600, Parity parity = Parity.None,
-                           int dataBits = 8, StopBits stopBits = StopBits.One);
+        Task<bool> OpenAsync(
+            string portName,
+            int baudRate = 9600,
+            Parity parity = Parity.None,
+            int dataBits = 8,
+            StopBits stopBits = StopBits.One
+        );
 
         /// <summary>
         /// 异步关闭串口
@@ -64,5 +69,4 @@ namespace DualModeMonitorSystem.Services
         /// <returns>发送成功返回true，否则返回false</returns>
         Task<bool> WriteAsync(string text, Encoding encoding = null);
     }
-
 }

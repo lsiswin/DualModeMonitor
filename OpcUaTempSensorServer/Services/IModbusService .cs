@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MonitorLibrary.Models;
 
-namespace DualModeMonitorSystem.Services
+namespace OpcUaTempSensorServer.Services
 {
     /// <summary>
     /// Modbus服务接口，定义Modbus RTU协议的基本操作
@@ -16,11 +16,6 @@ namespace DualModeMonitorSystem.Services
         /// 连接状态变更事件流（连接/断开时触发）
         /// </summary>
         IObservable<bool> ConnectionStatusChanged { get; }
-
-        /// <summary>
-        /// 日志消息事件流（用于输出操作日志）
-        /// </summary>
-        IObservable<string> LogMessage { get; }
 
         /// <summary>
         /// 是否处于连接状态
@@ -96,13 +91,5 @@ namespace DualModeMonitorSystem.Services
         /// <param name="data">要写入的数据数组</param>
         /// <returns>写入成功返回true</returns>
         Task<bool> WriteMultipleRegistersAsync(ushort startAddress, ushort[] data);
-
-        /// <summary>
-        /// 批量读取设备数据（包含线圈、输入、保持寄存器、输入寄存器）
-        /// </summary>
-        /// <param name="startAddress">起始地址</param>
-        /// <param name="registerCount">读取数量</param>
-        /// <returns>包含各类数据的ModbusData对象</returns>
-        Task<ModbusData> ReadDeviceDataAsync(ushort startAddress, ushort registerCount);
     }
 }

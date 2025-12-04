@@ -112,15 +112,6 @@ namespace DualModeMonitorSystem.ViewModels
         {
             ErrorMessage = string.Empty;
 
-            if (
-                CurrentDataPoint.ModbusConfig.DeviceAddress < 1
-                || CurrentDataPoint.ModbusConfig.DeviceAddress > 247
-            )
-            {
-                ErrorMessage = "从站地址必须在 1-247 之间";
-                return false;
-            }
-
             if (CurrentDataPoint.ModbusConfig.RegisterStart > 65535)
             {
                 ErrorMessage = "寄存器地址超出范围 (0-65535)";

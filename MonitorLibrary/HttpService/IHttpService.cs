@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DualModeMonitorSystem.Services
+namespace MonitorLibrary.HttpService
 {
     public interface IHttpService
     {
@@ -15,5 +15,4 @@ namespace DualModeMonitorSystem.Services
         void SetBaseAddress(string baseAddress);
         void SetAuthenticationToken(string token);
     }
-
 }

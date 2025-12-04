@@ -9,8 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using MonitorLibrary.Models;
 using MonitorLibrary.Models.Enums;
+using MonitorLibrary.Reactive;
 
-namespace DualModeMonitorSystem.Services
+namespace OpcUaTempSensorServer.Services
 {
     /// <summary>
     /// Modbus服务实现类，基于串口服务实现Modbus RTU协议
@@ -18,8 +19,8 @@ namespace DualModeMonitorSystem.Services
     public class ModbusService : IModbusService
     {
         private readonly ISerialPortService _serialPortService; // 串口服务依赖
+        private readonly ReactiveLogger _logger;
         private readonly Subject<bool> _connectionStatusSubject; // 连接状态事件主题
-        private readonly Subject<string> _logMessageSubject; // 日志消息事件主题
         private byte _slaveId; // Modbus从站地址
         private bool _disposed = false; // 释放标志
 
@@ -27,11 +28,6 @@ namespace DualModeMonitorSystem.Services
         /// 连接状态变更事件流（对外暴露为只读可观察对象）
         /// </summary>
         public IObservable<bool> ConnectionStatusChanged => _connectionStatusSubject.AsObservable();
-
-        /// <summary>
-        /// 日志消息事件流（对外暴露为只读可观察对象）
-        /// </summary>
-        public IObservable<string> LogMessage => _logMessageSubject.AsObservable();
 
         /// <summary>
         /// 是否连接到Modbus设备
@@ -42,12 +38,14 @@ namespace DualModeMonitorSystem.Services
         /// 构造函数，注入串口服务依赖
         /// </summary>
         /// <param name="serialPortService">串口服务实例</param>
-        public ModbusService(ISerialPortService serialPortService)
+        public ModbusService(ISerialPortService serialPortService, ReactiveLogger logger)
         {
             _serialPortService = serialPortService;
+            _logger = logger;
             _connectionStatusSubject = new Subject<bool>();
-            _logMessageSubject = new Subject<string>();
         }
+
+        public ModbusService() { }
 
         /// <summary>
         /// 连接到Modbus设备（通过串口）
@@ -58,16 +56,24 @@ namespace DualModeMonitorSystem.Services
         {
             try
             {
-                _slaveId = 1; // 保存从站地址
+                _slaveId = config.DeviceAddress; // 保存从站地址
 
                 // 调用串口服务打开串口（Modbus RTU基于串口通信）
-                var success = await _serialPortService.OpenAsync(config.PortName, (int)config.BaudRate, config.Parity, (int)config.DataBits, config.StopBits);
+                var success = await _serialPortService.OpenAsync(
+                    config.PortName,
+                    (int)config.BaudRate,
+                    config.Parity,
+                    (int)config.DataBits,
+                    config.StopBits
+                );
 
                 if (success)
                 {
                     IsConnected = true;
                     _connectionStatusSubject.OnNext(true); // 推送连接成功事件
-                    _logMessageSubject.OnNext($"Modbus连接成功 - 端口: {config.PortName}, 从站: {config.Id}");
+                    _logger.LogInformation(
+                        $"Modbus连接成功 - 端口: {config.PortName}, 从站: {config.Id}"
+                    );
 
                     // 订阅串口数据接收和状态变更事件
                     _serialPortService.DataReceived.Subscribe(OnSerialDataReceived);
@@ -80,7 +86,7 @@ namespace DualModeMonitorSystem.Services
             }
             catch (Exception ex)
             {
-                _logMessageSubject.OnNext($"Modbus连接失败: {ex.Message}");
+                _logger.LogError($"Modbus连接失败: {ex.Message}");
                 return false;
             }
         }
@@ -94,7 +100,7 @@ namespace DualModeMonitorSystem.Services
             await _serialPortService.CloseAsync();
             IsConnected = false;
             _connectionStatusSubject.OnNext(false); // 推送断开连接事件
-            _logMessageSubject.OnNext("Modbus连接已关闭");
+            _logger.LogInformation("Modbus连接已关闭");
         }
 
         /// <summary>
@@ -104,16 +110,16 @@ namespace DualModeMonitorSystem.Services
         private void OnSerialDataReceived(byte[] data)
         {
             // 此处可扩展为解析Modbus响应帧的逻辑
-            _logMessageSubject.OnNext($"收到Modbus数据: {BitConverter.ToString(data)}");
+            _logger.LogInformation($"收到Modbus数据: {BitConverter.ToString(data)}");
         }
 
         /// <summary>
         /// 处理串口状态变更
         /// </summary>
         /// <param name="status">状态描述字符串</param>
-        private void OnSerialStatusChanged(string status)
+        private void OnSerialStatusChanged(bool status)
         {
-            _logMessageSubject.OnNext($"串口状态: {status}");
+            _logger.LogInformation($"串口状态: {status}");
         }
 
         /// <summary>
@@ -136,7 +142,7 @@ namespace DualModeMonitorSystem.Services
             }
             catch (Exception ex)
             {
-                _logMessageSubject.OnNext($"读取线圈失败: {ex.Message}");
+                _logger.LogError($"读取线圈失败: {ex.Message}");
                 return new bool[numberOfPoints]; // 失败时返回空数组
             }
         }
@@ -147,7 +153,10 @@ namespace DualModeMonitorSystem.Services
         /// <param name="startAddress">起始地址</param>
         /// <param name="numberOfPoints">读取数量</param>
         /// <returns>寄存器值数组</returns>
-        public async Task<ushort[]> ReadHoldingRegistersAsync(ushort startAddress, ushort numberOfPoints)
+        public async Task<ushort[]> ReadHoldingRegistersAsync(
+            ushort startAddress,
+            ushort numberOfPoints
+        )
         {
             try
             {
@@ -161,7 +170,7 @@ namespace DualModeMonitorSystem.Services
             }
             catch (Exception ex)
             {
-                _logMessageSubject.OnNext($"读取保持寄存器失败: {ex.Message}");
+                _logger.LogError($"读取保持寄存器失败: {ex.Message}");
                 return new ushort[numberOfPoints]; // 失败时返回空数组
             }
         }
@@ -186,7 +195,7 @@ namespace DualModeMonitorSystem.Services
             }
             catch (Exception ex)
             {
-                _logMessageSubject.OnNext($"写入寄存器失败: {ex.Message}");
+                _logger.LogInformation($"写入寄存器失败: {ex.Message}");
                 return false;
             }
         }
@@ -200,7 +209,7 @@ namespace DualModeMonitorSystem.Services
         public Task<bool[]> ReadInputsAsync(ushort startAddress, ushort numberOfPoints)
         {
             // 实现逻辑类似ReadCoilsAsync（功能码改为0x02）
-            _logMessageSubject.OnNext($"读取输入状态 - 地址: {startAddress}, 数量: {numberOfPoints}");
+            _logger.LogInformation($"读取输入状态 - 地址: {startAddress}, 数量: {numberOfPoints}");
             return Task.FromResult(new bool[numberOfPoints]);
         }
 
@@ -213,7 +222,9 @@ namespace DualModeMonitorSystem.Services
         public Task<ushort[]> ReadInputRegistersAsync(ushort startAddress, ushort numberOfPoints)
         {
             // 实现逻辑类似ReadHoldingRegistersAsync（功能码改为0x04）
-            _logMessageSubject.OnNext($"读取输入寄存器 - 地址: {startAddress}, 数量: {numberOfPoints}");
+            _logger.LogInformation(
+                $"读取输入寄存器 - 地址: {startAddress}, 数量: {numberOfPoints}"
+            );
             return Task.FromResult(new ushort[numberOfPoints]);
         }
 
@@ -228,7 +239,7 @@ namespace DualModeMonitorSystem.Services
             // 实现逻辑：
             // 1. 构建功能码0x05的请求帧（值为0xFF00表示导通，0x0000表示断开）
             // 2. 发送请求并验证响应
-            _logMessageSubject.OnNext($"写入线圈 - 地址: {address}, 值: {value}");
+            _logger.LogInformation($"写入线圈 - 地址: {address}, 值: {value}");
             return Task.FromResult(true);
         }
 
@@ -243,49 +254,10 @@ namespace DualModeMonitorSystem.Services
             // 实现逻辑：
             // 1. 构建功能码0x10的请求帧（包含起始地址、数量、字节数、数据）
             // 2. 发送请求并验证响应
-            _logMessageSubject.OnNext($"写入多个寄存器 - 起始地址: {startAddress}, 数量: {data?.Length}");
+            _logger.LogInformation(
+                $"写入多个寄存器 - 起始地址: {startAddress}, 数量: {data?.Length}"
+            );
             return Task.FromResult(true);
-        }
-
-        /// <summary>
-        /// 批量读取设备数据（并行读取多种类型）
-        /// </summary>
-        /// <param name="startAddress">起始地址</param>
-        /// <param name="registerCount">读取数量</param>
-        /// <returns>ModbusData对象</returns>
-        public async Task<ModbusData> ReadDeviceDataAsync(ushort startAddress, ushort registerCount)
-        {
-            var data = new ModbusData
-            {
-                ReadTime = DateTime.Now // 记录读取时间
-            };
-
-            try
-            {
-                // 并行执行多个读取任务（提高效率）
-                var holdingRegistersTask = ReadHoldingRegistersAsync(startAddress, registerCount);
-                var inputRegistersTask = ReadInputRegistersAsync(startAddress, registerCount);
-                // 线圈和输入最大读取数量通常为2000，此处做限制
-                var coilsTask = ReadCoilsAsync(startAddress, Math.Min(registerCount, (ushort)2000));
-                var inputsTask = ReadInputsAsync(startAddress, Math.Min(registerCount, (ushort)2000));
-
-                // 等待所有任务完成
-                await Task.WhenAll(holdingRegistersTask, inputRegistersTask, coilsTask, inputsTask);
-
-                // 赋值结果
-                data.HoldingRegisters = await holdingRegistersTask;
-                data.InputRegisters = await inputRegistersTask;
-                data.Coils = await coilsTask;
-                data.Inputs = await inputsTask;
-
-                _logMessageSubject.OnNext($"设备数据读取完成 - 地址: {startAddress}, 数量: {registerCount}");
-            }
-            catch (Exception ex)
-            {
-                _logMessageSubject.OnNext($"读取设备数据失败: {ex.Message}");
-            }
-
-            return data;
         }
 
         /// <summary>
@@ -298,17 +270,17 @@ namespace DualModeMonitorSystem.Services
         {
             // Modbus RTU帧结构：[从站地址(1字节)][功能码(1字节)][起始地址(2字节)][数量(2字节)][CRC校验(2字节)]
             var request = new byte[8];
-            request[0] = _slaveId;                    // 从站地址
-            request[1] = 0x03;                       // 功能码：读保持寄存器
-            request[2] = (byte)(startAddress >> 8);  // 起始地址高字节
+            request[0] = _slaveId; // 从站地址
+            request[1] = 0x03; // 功能码：读保持寄存器
+            request[2] = (byte)(startAddress >> 8); // 起始地址高字节
             request[3] = (byte)(startAddress & 0xFF); // 起始地址低字节
             request[4] = (byte)(numberOfPoints >> 8); // 数量高字节
             request[5] = (byte)(numberOfPoints & 0xFF); // 数量低字节
 
             // 计算CRC校验并填充
             var crc = CalculateCRC(request, 6); // 前6字节参与CRC计算
-            request[6] = (byte)(crc & 0xFF);    // CRC低字节
-            request[7] = (byte)(crc >> 8);      // CRC高字节
+            request[6] = (byte)(crc & 0xFF); // CRC低字节
+            request[7] = (byte)(crc >> 8); // CRC高字节
 
             return request;
         }
@@ -323,8 +295,8 @@ namespace DualModeMonitorSystem.Services
         {
             var request = new byte[8];
             request[0] = _slaveId;
-            request[1] = 0x01;                       // 功能码：读线圈
-            request[2] = (byte)(startAddress >> 8);  // 起始地址高字节
+            request[1] = 0x01; // 功能码：读线圈
+            request[2] = (byte)(startAddress >> 8); // 起始地址高字节
             request[3] = (byte)(startAddress & 0xFF); // 起始地址低字节
             request[4] = (byte)(numberOfPoints >> 8); // 数量高字节
             request[5] = (byte)(numberOfPoints & 0xFF); // 数量低字节
@@ -346,11 +318,11 @@ namespace DualModeMonitorSystem.Services
         {
             var request = new byte[8];
             request[0] = _slaveId;
-            request[1] = 0x06;                       // 功能码：写单个寄存器
-            request[2] = (byte)(address >> 8);       // 地址高字节
-            request[3] = (byte)(address & 0xFF);     // 地址低字节
-            request[4] = (byte)(value >> 8);         // 值高字节
-            request[5] = (byte)(value & 0xFF);       // 值低字节
+            request[1] = 0x06; // 功能码：写单个寄存器
+            request[2] = (byte)(address >> 8); // 地址高字节
+            request[3] = (byte)(address & 0xFF); // 地址低字节
+            request[4] = (byte)(value >> 8); // 值高字节
+            request[5] = (byte)(value & 0xFF); // 值低字节
 
             var crc = CalculateCRC(request, 6);
             request[6] = (byte)(crc & 0xFF);
@@ -365,7 +337,10 @@ namespace DualModeMonitorSystem.Services
         /// <param name="request">请求帧字节数组</param>
         /// <param name="expectedResponseLength">预期响应长度</param>
         /// <returns>响应帧字节数组</returns>
-        private async Task<byte[]> SendModbusRequestAsync(byte[] request, int expectedResponseLength)
+        private async Task<byte[]> SendModbusRequestAsync(
+            byte[] request,
+            int expectedResponseLength
+        )
         {
             if (!IsConnected)
                 throw new InvalidOperationException("Modbus未连接");
@@ -377,7 +352,9 @@ namespace DualModeMonitorSystem.Services
 
             // 等待设备响应：订阅串口 DataReceived，累积字节直到达到预期长度或超时
             var buffer = new List<byte>(expectedResponseLength);
-            var tcs = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<byte[]>(
+                TaskCreationOptions.RunContinuationsAsynchronously
+            );
             CancellationTokenSource cts = new CancellationTokenSource();
 
             // 默认超时 2000ms；如果串口实现或配置可提供超时值，应使用该值
@@ -390,7 +367,8 @@ namespace DualModeMonitorSystem.Services
                 {
                     try
                     {
-                        if (data == null || data.Length == 0) return;
+                        if (data == null || data.Length == 0)
+                            return;
                         lock (buffer)
                         {
                             buffer.AddRange(data);
@@ -415,7 +393,10 @@ namespace DualModeMonitorSystem.Services
                 using (cts.Token.Register(() => tcs.TrySetCanceled()))
                 {
                     // 等待完成或取消
-                    var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(Timeout.Infinite, cts.Token));
+                    var completedTask = await Task.WhenAny(
+                        tcs.Task,
+                        Task.Delay(Timeout.Infinite, cts.Token)
+                    );
 
                     if (completedTask == tcs.Task)
                     {
@@ -431,7 +412,11 @@ namespace DualModeMonitorSystem.Services
             finally
             {
                 // 取消订阅以释放资源
-                try { subscription?.Dispose(); } catch { }
+                try
+                {
+                    subscription?.Dispose();
+                }
+                catch { }
                 cts.Dispose();
             }
         }
@@ -470,7 +455,7 @@ namespace DualModeMonitorSystem.Services
             for (int i = 0; i < numberOfPoints; i++)
             {
                 var byteIndex = i / 8; // 计算当前线圈所在的字节索引
-                var bitIndex = i % 8;  // 计算当前线圈在字节中的bit位置
+                var bitIndex = i % 8; // 计算当前线圈在字节中的bit位置
                 if (byteIndex < byteCount)
                 {
                     // 检查对应bit是否为1
@@ -490,11 +475,14 @@ namespace DualModeMonitorSystem.Services
         private bool ValidateWriteResponse(byte[] response, ushort address, ushort value)
         {
             // 写入响应应与请求帧一致（除CRC外）
-            return response.Length >= 8 &&
-                   response[0] == _slaveId && // 从站地址匹配
-                   response[1] == 0x06 &&     // 功能码匹配
-                   BitConverter.ToUInt16(response, 2) == address && // 地址匹配
-                   BitConverter.ToUInt16(response, 4) == value;     // 值匹配
+            return response.Length >= 8
+                && response[0] == _slaveId
+                && // 从站地址匹配
+                response[1] == 0x06
+                && // 功能码匹配
+                BitConverter.ToUInt16(response, 2) == address
+                && // 地址匹配
+                BitConverter.ToUInt16(response, 4) == value; // 值匹配
         }
 
         /// <summary>
@@ -539,11 +527,9 @@ namespace DualModeMonitorSystem.Services
                 // 完成并释放事件主题
                 _connectionStatusSubject?.OnCompleted();
                 _connectionStatusSubject?.Dispose();
-                _logMessageSubject?.OnCompleted();
-                _logMessageSubject?.Dispose();
+                _logger.Dispose();
                 _disposed = true;
             }
         }
     }
 }
-
