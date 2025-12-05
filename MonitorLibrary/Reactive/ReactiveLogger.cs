@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace MonitorLibrary.Reactive
 {
@@ -45,6 +46,7 @@ namespace MonitorLibrary.Reactive
         public void Log(LogLevel level, string message, Exception exception = null)
         {
             _logSubject.OnNext(new LogEvent(level, message, exception));
+            Console.WriteLine($"[{level}] {message}");
         }
 
         public void Dispose()

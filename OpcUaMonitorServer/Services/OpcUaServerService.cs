@@ -27,7 +27,7 @@ namespace OpcUaMonitorServer.Services
     /// </summary>
     public class OpcUaServerService : IOpcUaServerService
     {
-        private readonly ILogger<OpcUaServerService> _logger;
+        private readonly ReactiveLogger _logger;
         private readonly OpcServerConfiguration _config;
         private MonitorServer? _server;
         private DeviceNodeManager? _nodeManager;
@@ -36,10 +36,7 @@ namespace OpcUaMonitorServer.Services
 
         public bool IsRunning => _isRunning;
 
-        public OpcUaServerService(
-            IOptions<OpcServerConfiguration> config,
-            ILogger<OpcUaServerService> logger
-        )
+        public OpcUaServerService(IOptions<OpcServerConfiguration> config, ReactiveLogger logger)
         {
             _config = config.Value;
             _logger = logger;
@@ -65,22 +62,29 @@ namespace OpcUaMonitorServer.Services
                 // 加载应用程序配置
                 var appConfig = await LoadApplicationConfiguration();
                 _application.ApplicationConfiguration = appConfig;
+                // 检查应用程序实例证书
+                bool certOk = await _application.CheckApplicationInstanceCertificatesAsync(
+                    silent: false,
+                    1024
+                );
 
-                // 创建节点管理器
-                _nodeManager = new DeviceNodeManager(null, appConfig, null!);
-
+                if (!certOk)
+                {
+                    _logger.LogError("应用程序证书检查失败");
+                    throw new InvalidOperationException("无法获取有效的应用程序证书");
+                }
                 // 创建服务器实例
-                _server = new MonitorServer(_nodeManager);
-
+                _server = new MonitorServer(_logger);
+                _nodeManager = _server.GetNodeManager();
                 // 启动服务器
                 await _application.StartAsync(_server);
 
                 _isRunning = true;
-                _logger.LogInformation("OPC UA Server已启动，端口: {Port}", _config.Port);
+                _logger.LogInformation($"OPC UA Server已启动，端口: {_config.Port}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "启动OPC UA Server失败");
+                _logger.LogError("启动OPC UA Server失败", ex);
                 throw;
             }
         }
@@ -103,7 +107,7 @@ namespace OpcUaMonitorServer.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "停止OPC UA Server失败");
+                _logger.LogError("停止OPC UA Server失败", ex);
             }
         }
 
@@ -119,14 +123,12 @@ namespace OpcUaMonitorServer.Services
             {
                 _nodeManager.CreateDeviceNode(device, dataPoints);
                 _logger.LogInformation(
-                    "已创建设备节点: {DeviceName}, 数据点数: {Count}",
-                    device.Name,
-                    dataPoints.Count
+                    $"已创建设备节点: {device.Name}, 数据点数: {dataPoints.Count}"
                 );
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建设备节点失败: {DeviceName}", device.Name);
+                _logger.LogError($"创建设备节点失败: {device.Name}", ex);
             }
         }
 
@@ -147,10 +149,8 @@ namespace OpcUaMonitorServer.Services
             catch (Exception ex)
             {
                 _logger.LogError(
-                    ex,
-                    "更新数据点值失败: DeviceId={DeviceId}, DataPointId={DataPointId}",
-                    deviceId,
-                    dataPointId
+                    $"更新数据点值失败: DeviceId={deviceId}, DataPointId={dataPointId}",
+                    ex
                 );
             }
         }
@@ -163,11 +163,11 @@ namespace OpcUaMonitorServer.Services
             try
             {
                 _nodeManager.RemoveDeviceNode(deviceId);
-                _logger.LogInformation("已移除设备节点: DeviceId={DeviceId}", deviceId);
+                _logger.LogInformation($"已移除设备节点: DeviceId={deviceId}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "移除设备节点失败: DeviceId={DeviceId}", deviceId);
+                _logger.LogError($"移除设备节点失败: DeviceId={deviceId}", ex);
             }
         }
 
@@ -248,6 +248,8 @@ namespace OpcUaMonitorServer.Services
 
             await config.ValidateAsync(ApplicationType.Server);
 
+            // 确保证书在可信存储中
+            config.SecurityConfiguration.AddAppCertToTrustedStore = true;
             return config;
         }
     }
@@ -257,11 +259,12 @@ namespace OpcUaMonitorServer.Services
     /// </summary>
     public class MonitorServer : StandardServer
     {
-        private readonly DeviceNodeManager _nodeManager;
+        private readonly ReactiveLogger _logger;
+        private DeviceNodeManager? _nodeManager;
 
-        public MonitorServer(DeviceNodeManager nodeManager)
+        public MonitorServer(ReactiveLogger logger)
         {
-            _nodeManager = nodeManager;
+            _logger = logger;
         }
 
         protected override MasterNodeManager CreateMasterNodeManager(
@@ -269,6 +272,9 @@ namespace OpcUaMonitorServer.Services
             ApplicationConfiguration configuration
         )
         {
+            // 在这里创建节点管理器，此时 server 已经可用
+            _nodeManager = new DeviceNodeManager(server, configuration, _logger);
+
             var masterNodeManager = new MasterNodeManager(
                 server,
                 configuration,
@@ -276,6 +282,11 @@ namespace OpcUaMonitorServer.Services
                 _nodeManager
             );
             return masterNodeManager;
+        }
+
+        public DeviceNodeManager? GetNodeManager()
+        {
+            return _nodeManager;
         }
     }
 }

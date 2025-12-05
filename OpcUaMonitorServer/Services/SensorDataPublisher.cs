@@ -28,6 +28,7 @@ namespace OpcUaMonitorServer.Services
         public SensorDataPublisher(IMessagePublisher messagePublisher, ReactiveLogger logger)
         {
             _messagePublisher = messagePublisher;
+            _messagePublisher.InitializeChannelAsync();
             _logger = logger;
         }
 

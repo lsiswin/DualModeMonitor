@@ -26,6 +26,7 @@ namespace MonitorRabbitMQService.Services
             string routingKey = "",
             bool persistent = true
         );
+        Task InitializeChannelAsync();
 
         /// <summary>
         /// 发布数据点消息

@@ -57,8 +57,6 @@ namespace OpcUaMonitorServer.Services
             _logger = logger;
         }
 
-        public SerialPortService() { }
-
         /// <summary>
         /// 异步打开串口
         /// </summary>
@@ -84,6 +82,7 @@ namespace OpcUaMonitorServer.Services
 
                 await Task.Run(() =>
                 {
+                    portName = "COM8";
                     _serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits)
                     {
                         ReadTimeout = 1000,
@@ -97,9 +96,6 @@ namespace OpcUaMonitorServer.Services
                 });
                 _statusChangedSubject.OnNext(true);
                 _logger.LogInformation($"串口 {portName} 打开成功");
-
-                // 启动后台数据读取任务（使用独立线程避免阻塞）
-                _ = Task.Run(async () => await ReadDataAsync(_cancellationTokenSource.Token));
 
                 return true;
             }
@@ -194,6 +190,10 @@ namespace OpcUaMonitorServer.Services
         /// <param name="e">事件参数（包含接收数据类型）</param>
         private void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
         {
+            // *** 必须确认这行日志是否出现 ***
+            _logger.LogDebug(
+                $"*** OnDataReceived triggered by SerialPort. EventType: {e.EventType}, BytesToRead: {_serialPort?.BytesToRead} ***"
+            );
             try
             {
                 // 校验串口状态
@@ -224,32 +224,6 @@ namespace OpcUaMonitorServer.Services
         private void OnErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
             _logger.LogError($"串口错误: {e.EventType}");
-        }
-
-        /// <summary>
-        /// 后台数据读取任务（辅助监控数据接收）
-        /// </summary>
-        /// <param name="cancellationToken">取消令牌（用于停止任务）</param>
-        private async Task ReadDataAsync(CancellationToken cancellationToken)
-        {
-            // 循环监控，直到任务被取消或串口关闭
-            while (!cancellationToken.IsCancellationRequested && IsOpen)
-            {
-                try
-                {
-                    // 延迟100ms，降低CPU占用（实际数据接收依赖DataReceived事件）
-                    await Task.Delay(100, cancellationToken);
-                }
-                catch (TaskCanceledException)
-                {
-                    // 任务被取消时退出循环
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"数据读取任务错误: {ex.Message}");
-                }
-            }
         }
 
         /// <summary>

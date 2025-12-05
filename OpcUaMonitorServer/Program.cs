@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MonitorLibrary.HttpService;
+using MonitorLibrary.Reactive;
 using MonitorRabbitMQService.Configuration;
 using MonitorRabbitMQService.Services;
 using OpcUaMonitorServer.Configuration;
@@ -19,8 +20,13 @@ builder.Services.Configure<DataCollectionConfiguration>(
     builder.Configuration.GetSection("DataCollection")
 );
 
+// 注册日志服务
+builder.Services.AddSingleton<ReactiveLogger>();
+
 // 注册HTTP服务
 builder.Services.AddSingleton<IHttpService, HttpService>();
+
+builder.Services.AddSingleton<IModbusServiceFactory, ModbusServiceFactory>();
 
 // 注册RabbitMQ服务
 builder.Services.AddSingleton<IRabbitMQConnectionService, RabbitMQConnectionService>();
@@ -33,5 +39,7 @@ builder.Services.AddSingleton<ISensorDataPublisher, SensorDataPublisher>();
 builder.Services.AddSingleton<IOpcUaServerService, OpcUaServerService>();
 builder.Services.AddSingleton<IDataCollectionService, DataCollectionService>();
 
+// 注册后台服务
+builder.Services.AddHostedService<ApplicationHostedService>();
 var host = builder.Build();
 host.Run();

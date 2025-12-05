@@ -33,7 +33,7 @@ namespace OpcUaMonitorServer.Services
         private readonly IOpcUaServerService? _opcServer;
         private readonly ReactiveLogger _logger;
         private readonly DataCollectionConfiguration _config;
-
+        private readonly IModbusServiceFactory _modbusFactory; // 新增工厂依赖
         private readonly ConcurrentDictionary<int, IModbusService> _modbusConnections = new();
         private readonly ConcurrentDictionary<string, OpcDataMessage> _latestData = new();
         private CancellationTokenSource? _cts;
@@ -44,12 +44,15 @@ namespace OpcUaMonitorServer.Services
             ISensorDataPublisher dataPublisher,
             IOptions<DataCollectionConfiguration> config,
             ReactiveLogger logger,
+            IModbusServiceFactory modbusFactory, // 注入工厂
             IOpcUaServerService? opcServer = null
         )
         {
             _deviceManager = deviceManager;
             _dataPublisher = dataPublisher;
+
             _opcServer = opcServer;
+            _modbusFactory = modbusFactory;
             _config = config.Value;
             _logger = logger;
         }
@@ -188,23 +191,25 @@ namespace OpcUaMonitorServer.Services
 
                 // 连接已断开，尝试重新连接
                 await existingConnection.DisconnectAsync();
+                existingConnection.Dispose();
                 _modbusConnections.TryRemove(device.Id, out _);
+            }
+            var config = device.PortConfig;
+            if (config == null)
+            {
+                _logger.LogError($"无法解析设备连接配置: {device.Name}");
+                return null;
             }
             try
             {
-                var serialPortService = new SerialPortService();
-                var modbusService = new ModbusService();
-                var config = device.PortConfig;
-                if (config == null)
-                {
-                    _logger.LogError($"无法解析设备连接配置: {device.Name}");
-                    return null;
-                }
+                // 使用工厂创建并连接
+                var (modbusService, isConnected) = await _modbusFactory.CreateAndConnectAsync(
+                    config
+                );
 
-                var connected = await modbusService.ConnectAsync(config);
-                if (connected)
+                if (isConnected && modbusService != null) // 检查 null 是好习惯
                 {
-                    _modbusConnections[device.Id] = modbusService;
+                    _modbusConnections[device.Id] = modbusService; // 存储新创建的服务实例
                     _logger.LogInformation($"成功连接到设备: {device.Name}");
                     return modbusService;
                 }

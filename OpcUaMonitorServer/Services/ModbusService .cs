@@ -45,8 +45,6 @@ namespace OpcUaMonitorServer.Services
             _connectionStatusSubject = new Subject<bool>();
         }
 
-        public ModbusService() { }
-
         /// <summary>
         /// 连接到Modbus设备（通过串口）
         /// </summary>
@@ -363,6 +361,7 @@ namespace OpcUaMonitorServer.Services
             IDisposable subscription = null;
             try
             {
+                //问题出在DataReceived没有接收到
                 subscription = _serialPortService.DataReceived.Subscribe(data =>
                 {
                     try
@@ -375,6 +374,12 @@ namespace OpcUaMonitorServer.Services
                             if (buffer.Count >= expectedResponseLength)
                             {
                                 // 截取前 expectedResponseLength 个字节返回
+                                _logger.LogDebug(
+                                    $"Received {data.Length} bytes. , Data: [{string.Join(", ", data.Select(b => $"0x{b:X2}"))}]"
+                                );
+                                _logger.LogDebug(
+                                    $"Current buffer content: [{string.Join(", ", buffer.Select(b => $"0x{b:X2}"))}]"
+                                );
                                 var result = buffer.Take(expectedResponseLength).ToArray();
                                 // 完成 tcs（注意：可能多次触发，故使用 TrySetResult）
                                 tcs.TrySetResult(result);
@@ -400,6 +405,10 @@ namespace OpcUaMonitorServer.Services
 
                     if (completedTask == tcs.Task)
                     {
+                        _logger.LogDebug(
+                            "Modbus response task completed (either successfully or with error/exception)."
+                        );
+
                         // 成功接收
                         return await tcs.Task; // 已完成
                     }

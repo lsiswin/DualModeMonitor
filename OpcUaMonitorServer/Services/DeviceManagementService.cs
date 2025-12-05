@@ -9,6 +9,7 @@ using MonitorLibrary.HttpService;
 using MonitorLibrary.Models;
 using MonitorLibrary.Reactive;
 using Newtonsoft.Json;
+using OpcUaMonitorServer.Configuration;
 using OpcUaMonitorServer.Model;
 
 namespace OpcUaMonitorServer.Services
@@ -30,9 +31,14 @@ namespace OpcUaMonitorServer.Services
         private List<DeviceInfo> _cachedDevices = new();
         private Dictionary<int, List<DataPointInfo>> _cachedDataPoints = new();
 
-        public DeviceManagementService(IHttpService httpService, ReactiveLogger logger)
+        public DeviceManagementService(
+            IHttpService httpService,
+            ReactiveLogger logger,
+            IOptions<MonitorApiConfiguration> options
+        )
         {
             _httpService = httpService;
+            _httpService.SetBaseAddress(options.Value.BaseUrl);
             _logger = logger;
         }
 

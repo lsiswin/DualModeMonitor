@@ -18,7 +18,7 @@ namespace OpcUaMonitorServer.Configuration
 
     public class MonitorApiConfiguration
     {
-        public string BaseUrl { get; set; } = "http://localhost:5000/api";
+        public string BaseUrl { get; set; } = "https://localhost:7137";
     }
 
     public class DataCollectionConfiguration
