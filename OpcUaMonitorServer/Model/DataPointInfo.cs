@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MonitorLibrary.Models.Enums;
 
 namespace OpcUaMonitorServer.Model
 {
@@ -33,7 +34,7 @@ namespace OpcUaMonitorServer.Model
         /// <summary>
         /// 数据格式
         /// </summary>
-        public string DataType { get; set; } = string.Empty;
+        public DataType DataType { get; set; } = DataType.UInt32;
 
         /// <summary>
         /// 寄存器起始地址

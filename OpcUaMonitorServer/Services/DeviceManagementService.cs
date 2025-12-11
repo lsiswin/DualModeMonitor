@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MonitorLibrary.HttpService;
 using MonitorLibrary.Models;
+using MonitorLibrary.Models.Enums;
 using MonitorLibrary.Reactive;
 using Newtonsoft.Json;
 using OpcUaMonitorServer.Configuration;
@@ -72,13 +73,14 @@ namespace OpcUaMonitorServer.Services
                             Code = dp.Code,
                             Name = dp.Name,
                             Unit = dp.Unit,
-                            DataType = dp.ModbusConfig.DataFormat.ToString(),
+                            DataType = DataTypeHelper.Parse(dp.ModbusConfig.DataFormat.ToString()),
                             Address = dp.ModbusConfig?.RegisterStart ?? 0,
                             Scale = (double)(dp.ModbusConfig?.DataMultiplier ?? 1.0m),
                             Offset = (double)(dp.ModbusConfig?.Offset ?? 0.0m),
                             IsEnable = dp.EnableAlarm,
                         })
                         .ToList();
+                    _cachedDataPoints.Add(deviceId, dataPoints);
                     _logger.LogInformation(
                         $"从API获取到 {dataPoints.Count} 个数据点，设备ID: {deviceId}"
                     );

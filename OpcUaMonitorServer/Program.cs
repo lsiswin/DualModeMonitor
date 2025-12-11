@@ -26,8 +26,6 @@ builder.Services.AddSingleton<ReactiveLogger>();
 // 注册HTTP服务
 builder.Services.AddSingleton<IHttpService, HttpService>();
 
-builder.Services.AddSingleton<IModbusServiceFactory, ModbusServiceFactory>();
-
 // 注册RabbitMQ服务
 builder.Services.AddSingleton<IRabbitMQConnectionService, RabbitMQConnectionService>();
 builder.Services.AddSingleton<IMessagePublisher, MessagePublisher>();

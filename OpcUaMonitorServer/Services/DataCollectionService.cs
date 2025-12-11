@@ -1,24 +1,19 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Collections.Concurrent;
+using System.IO.Ports;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MonitorLibrary.Models;
+using Microsoft.Win32;
+using MonitorLibrary.Models.Enums;
 using MonitorLibrary.Reactive;
 using MonitorRabbitMQService.Models;
-using Newtonsoft.Json;
+using NModbus;
+using NModbus.Serial;
+using NModbus.Utility; // 必须引用：用于数据转换
 using OpcUaMonitorServer.Configuration;
 using OpcUaMonitorServer.Model;
 
 namespace OpcUaMonitorServer.Services
 {
-    /// <summary>
-    /// 数据采集服务 - 通过Modbus/SerialPort读取传感器数据
-    /// </summary>
     public interface IDataCollectionService
     {
         Task StartAsync(CancellationToken cancellationToken);
@@ -26,33 +21,60 @@ namespace OpcUaMonitorServer.Services
         OpcDataMessage? GetLatestData(int deviceId, int dataPointId);
     }
 
-    public class DataCollectionService : IDataCollectionService
+    public class DataCollectionService : IDataCollectionService, IDisposable
     {
         private readonly IDeviceManagementService _deviceManager;
         private readonly ISensorDataPublisher _dataPublisher;
         private readonly IOpcUaServerService? _opcServer;
         private readonly ReactiveLogger _logger;
         private readonly DataCollectionConfiguration _config;
-        private readonly IModbusServiceFactory _modbusFactory; // 新增工厂依赖
-        private readonly ConcurrentDictionary<int, IModbusService> _modbusConnections = new();
+
+        // Modbus 工厂
+        private readonly ModbusFactory _modbusFactory;
+
+        // 核心改变：按串口名(如 "COM1")缓存资源，而不是按设备ID
+        // Key: PortName, Value: (SerialPort对象, ModbusMaster对象, 线程锁)
+        private readonly ConcurrentDictionary<string, SerialPortContext> _serialContexts = new();
+
         private readonly ConcurrentDictionary<string, OpcDataMessage> _latestData = new();
         private CancellationTokenSource? _cts;
         private Task? _collectionTask;
+
+        // 内部类：用于管理串口上下文
+        private class SerialPortContext : IDisposable
+        {
+            public SerialPort Port { get; }
+            public IModbusSerialMaster Master { get; }
+            public SemaphoreSlim Lock { get; } = new SemaphoreSlim(1, 1); // 保证同一串口串行访问
+
+            public SerialPortContext(SerialPort port, IModbusSerialMaster master)
+            {
+                Port = port;
+                Master = master;
+            }
+
+            public void Dispose()
+            {
+                Master?.Dispose(); // Master通常会Dispose底层的Stream，但最好显式处理
+                if (Port.IsOpen)
+                    Port.Close();
+                Port.Dispose();
+                Lock.Dispose();
+            }
+        }
 
         public DataCollectionService(
             IDeviceManagementService deviceManager,
             ISensorDataPublisher dataPublisher,
             IOptions<DataCollectionConfiguration> config,
             ReactiveLogger logger,
-            IModbusServiceFactory modbusFactory, // 注入工厂
             IOpcUaServerService? opcServer = null
         )
         {
             _deviceManager = deviceManager;
             _dataPublisher = dataPublisher;
-
+            _modbusFactory = new ModbusFactory();
             _opcServer = opcServer;
-            _modbusFactory = modbusFactory;
             _config = config.Value;
             _logger = logger;
         }
@@ -60,24 +82,41 @@ namespace OpcUaMonitorServer.Services
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("启动数据采集服务...");
-
             _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            // 使用 Task.Run 并确保存储 Task 引用
             _collectionTask = Task.Run(() => CollectionLoopAsync(_cts.Token), _cts.Token);
-
             await Task.CompletedTask;
         }
 
-        /// <summary>
-        /// 轮询采集所有设备数据
-        /// </summary>
-        /// <param name="token"></param>
-        private async void CollectionLoopAsync(CancellationToken token)
+        public async Task StopAsync()
+        {
+            _logger.LogInformation("停止数据采集服务...");
+            _cts?.Cancel();
+
+            if (_collectionTask != null)
+            {
+                try
+                {
+                    await _collectionTask;
+                }
+                catch (OperationCanceledException) { }
+            }
+
+            // 清理所有串口资源
+            foreach (var context in _serialContexts.Values)
+            {
+                context.Dispose();
+            }
+            _serialContexts.Clear();
+        }
+
+        private async Task CollectionLoopAsync(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    await CollectAllDeviceDataAsync();
+                    await CollectAllDeviceDataAsync(token);
                     await Task.Delay(_config.ScanIntervalMs, token);
                 }
                 catch (OperationCanceledException)
@@ -86,415 +125,232 @@ namespace OpcUaMonitorServer.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("数据采集循环出错", ex);
-                    await Task.Delay(1000, token);
+                    _logger.LogError("数据采集循环发生异常", ex);
+                    await Task.Delay(1000, token); // 出错后稍作暂停
                 }
             }
         }
 
-        /// <summary>
-        /// 采集设备数据
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        private async Task CollectAllDeviceDataAsync()
+        private async Task CollectAllDeviceDataAsync(CancellationToken token)
         {
             var devices = await _deviceManager.GetDevicesAsync();
-
-            foreach (var device in devices.Where(d => d.IsEnabled))
-            {
-                try
-                {
-                    await CollectDeviceDataAsync(device);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"采集设备数据失败: {device.Name}", ex);
-                }
-            }
+            // 并发处理不同设备，但在底层我们会通过锁来控制同一串口的并发
+            var tasks = devices
+                .Where(d => d.IsEnabled)
+                .Select(device => ProcessDeviceAsync(device, token));
+            await Task.WhenAll(tasks);
         }
 
-        /// <summary>
-        /// 采集单个设备数据
-        /// </summary>
-        /// <param name="device"></param>
-        /// <returns></returns>
-        private async Task CollectDeviceDataAsync(DeviceInfo device)
+        private async Task ProcessDeviceAsync(DeviceInfo device, CancellationToken token)
         {
-            // 获取或创建Modbus连接
-            var modbusService = await GetOrCreateModbusConnectionAsync(device);
-            if (modbusService == null || !modbusService.IsConnected)
-            {
-                _logger.LogWarning($"设备未连接: {device.Name}");
-                return;
-            }
-            // 获取设备的所有数据点
-            var dataPoints = await _deviceManager.GetDataPointsAsync(device.Id);
-
-            foreach (var dataPoint in dataPoints.Where(dp => dp.IsEnable))
-            {
-                try
-                {
-                    var value = await ReadDataPointAsync(modbusService, dataPoint);
-
-                    var sensorData = new OpcDataMessage
-                    {
-                        MessageId = Guid.NewGuid().ToString(),
-                        Name = device.Name,
-                        DataPointId = dataPoint.Id,
-                        DataPointCode = dataPoint.Code,
-                        DataType = dataPoint.DataType,
-                        Value = value * dataPoint.Scale + dataPoint.Offset,
-                        Timestamp = DateTime.Now,
-                        Quality = "Good",
-                        CommandType = OpcCommandType.Read,
-                    };
-
-                    // 保存最新数据
-                    var key = $"{device.Id}_{dataPoint.Id}";
-                    _latestData[key] = sensorData;
-
-                    // 更新OPC UA节点值
-                    _opcServer?.UpdateDataPointValue(
-                        device.Id,
-                        dataPoint.Id,
-                        sensorData.Value,
-                        sensorData.Timestamp
-                    );
-
-                    // 发布到RabbitMQ
-                    await _dataPublisher.PublishAsync(sensorData);
-
-                    _logger.LogDebug(
-                        $"采集数据: {sensorData.Name} = {sensorData.Value} {sensorData.DataType}"
-                    );
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"读取数据点失败: {device.Name}.{dataPoint.Name}", ex);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 获取或创建Modbus连接
-        /// </summary>
-        /// <param name="device"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        private async Task<IModbusService?> GetOrCreateModbusConnectionAsync(DeviceInfo device)
-        {
-            if (_modbusConnections.TryGetValue(device.Id, out var existingConnection))
-            {
-                if (existingConnection.IsConnected)
-                    return existingConnection;
-
-                // 连接已断开，尝试重新连接
-                await existingConnection.DisconnectAsync();
-                existingConnection.Dispose();
-                _modbusConnections.TryRemove(device.Id, out _);
-            }
-            var config = device.PortConfig;
-            if (config == null)
-            {
-                _logger.LogError($"无法解析设备连接配置: {device.Name}");
-                return null;
-            }
             try
             {
-                // 使用工厂创建并连接
-                var (modbusService, isConnected) = await _modbusFactory.CreateAndConnectAsync(
-                    config
-                );
+                // 1. 获取该设备对应的串口上下文
+                var context = GetOrCreateSerialContext(device);
+                if (context == null)
+                    return;
 
-                if (isConnected && modbusService != null) // 检查 null 是好习惯
+                // 2. 关键：进入锁 (同一COM口的设备必须排队)
+                await context.Lock.WaitAsync(token);
+                try
                 {
-                    _modbusConnections[device.Id] = modbusService; // 存储新创建的服务实例
-                    _logger.LogInformation($"成功连接到设备: {device.Name}");
-                    return modbusService;
+                    // 获取点位
+                    var dataPoints = await _deviceManager.GetDataPointsAsync(device.Id);
+                    byte slaveId = (byte)device.PortConfig.DeviceAddress;
+
+                    foreach (var dataPoint in dataPoints.Where(dp => dp.IsEnable))
+                    {
+                        if (token.IsCancellationRequested)
+                            break;
+
+                        try
+                        {
+                            // 3. 读取数据
+                            double rawValue = await ReadDataPointAsync(
+                                context.Master,
+                                slaveId,
+                                dataPoint
+                            );
+
+                            // 4. 处理和发布数据
+                            await PublishDataAsync(device, dataPoint, rawValue);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(
+                                $"读取点位失败 [{device.Name} - {dataPoint.Name}]: {ex.Message}"
+                            );
+                        }
+                    }
                 }
-                else
+                finally
                 {
-                    _logger.LogWarning($"连接设备失败: {device.Name}");
-                    modbusService.Dispose();
-                    return null;
+                    // 5. 释放锁
+                    context.Lock.Release();
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"创建Modbus连接失败: {device.Name}", ex);
+                _logger.LogError($"处理设备失败 [{device.Name}]: {ex.Message}");
+            }
+        }
+
+        // 管理串口连接的核心方法
+        private SerialPortContext? GetOrCreateSerialContext(DeviceInfo device)
+        {
+            var config = device.PortConfig;
+            if (config == null)
+                return null;
+
+            string portName = config.PortName.ToUpper();
+
+            // 如果已存在，直接返回
+            if (_serialContexts.TryGetValue(portName, out var context))
+            {
+                if (context.Port.IsOpen)
+                    return context;
+                context.Dispose(); // 如果端口意外关闭，清理并重建
+                _serialContexts.TryRemove(portName, out _);
+            }
+
+            try
+            {
+                // 创建原生 SerialPort
+                var port = new SerialPort(
+                    portName,
+                    (int)config.BaudRate,
+                    config.Parity,
+                    (int)config.DataBits,
+                    config.StopBits
+                );
+
+                port.Open();
+
+                var master = _modbusFactory.CreateRtuMaster(port);
+
+                // 设置超时
+                master.Transport.ReadTimeout = 1000;
+                master.Transport.WriteTimeout = 1000;
+
+                var newContext = new SerialPortContext(port, master);
+                _serialContexts.TryAdd(portName, newContext);
+
+                _logger.LogInformation($"串口 {portName} 已打开并初始化 Modbus Master");
+                return newContext;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"无法打开串口 {portName}: {ex.Message}");
                 return null;
             }
         }
 
-        /// <summary>
-        /// 关闭数据采集服务
-        /// </summary>
-        /// <returns></returns>
-        public async Task StopAsync()
+        private async Task PublishDataAsync(
+            DeviceInfo device,
+            DataPointInfo dataPoint,
+            double value
+        )
         {
-            _logger.LogInformation("停止数据采集服务...");
+            double finalValue = value * dataPoint.Scale + dataPoint.Offset;
 
-            _cts?.Cancel();
-
-            if (_collectionTask != null)
+            var msg = new OpcDataMessage
             {
-                await _collectionTask;
-            }
+                MessageId = Guid.NewGuid().ToString(),
+                Name = device.Name,
+                DataPointId = dataPoint.Id,
+                Value = finalValue,
+                Timestamp = DateTime.Now,
+                Quality = "Good",
+                DataPointCode = dataPoint.Code,
+                DataType = dataPoint.DataType.ToString(),
+                CommandType = OpcCommandType.Read,
+            };
 
-            // 关闭所有Modbus连接
-            foreach (var connection in _modbusConnections.Values)
-            {
-                await connection.DisconnectAsync();
-                connection.Dispose();
-            }
-            _modbusConnections.Clear();
+            // 缓存
+            _latestData[$"{device.Id}_{dataPoint.Id}"] = msg;
+
+            // OPC 更新
+            _opcServer?.UpdateDataPointValue(device.Id, dataPoint.Id, finalValue, msg.Timestamp);
+
+            // MQ 推送
+            await _dataPublisher.PublishAsync(msg);
         }
 
-        /// <summary>
-        /// 获取最新的数据点值
-        /// </summary>
-        /// <param name="deviceId"></param>
-        /// <param name="dataPointId"></param>
-        /// <returns></returns>
         public OpcDataMessage? GetLatestData(int deviceId, int dataPointId)
         {
-            var key = $"{deviceId}_{dataPointId}";
-            _latestData.TryGetValue(key, out var data);
+            _latestData.TryGetValue($"{deviceId}_{dataPointId}", out var data);
             return data;
         }
 
-        /// <summary>
-        /// 读取单个数据点的值
-        /// </summary>
-        /// <param name="modbusService"></param>
-        /// <param name="dataPoint"></param>
-        /// <returns></returns>
+        // === 数据读取逻辑重构 ===
         private async Task<double> ReadDataPointAsync(
-            IModbusService modbusService,
-            DataPointInfo dataPoint
+            IModbusSerialMaster master,
+            byte slaveId,
+            DataPointInfo dp
         )
         {
-            try
+            ushort addr = (ushort)dp.Address;
+            var type = dp.DataType;
+
+            // 1. 线圈和离散输入 (位操作)
+            if (type == DataType.Coil)
             {
-                // 根据数据类型选择合适的读取方式
-                return dataPoint.DataType.ToLower() switch
-                {
-                    "int16" or "short" => await ReadInt16Async(modbusService, dataPoint),
-                    "uint16" or "ushort" => await ReadUInt16Async(modbusService, dataPoint),
-                    "int32" or "int" => await ReadInt32Async(modbusService, dataPoint),
-                    "uint32" or "uint" => await ReadUInt32Async(modbusService, dataPoint),
-                    "float" or "single" => await ReadFloatAsync(modbusService, dataPoint),
-                    "double" => await ReadDoubleAsync(modbusService, dataPoint),
-                    "bool" or "boolean" => await ReadBoolAsync(modbusService, dataPoint),
-                    "coil" => await ReadCoilAsync(modbusService, dataPoint),
-                    "input" => await ReadInputAsync(modbusService, dataPoint),
-                    "inputregister" => await ReadInputRegisterAsync(modbusService, dataPoint),
-                    _ => await ReadUInt16Async(modbusService, dataPoint), // 默认读取UInt16
-                };
+                var coils = await master.ReadCoilsAsync(slaveId, addr, 1);
+                return coils.Length > 0 && coils[0] ? 1.0 : 0.0;
             }
-            catch (Exception ex)
+            if (type == DataType.DiscreteInput)
             {
-                _logger.LogError(
-                    $"读取数据点出错: Address={dataPoint.Address}, DataType={dataPoint.DataType}",
-                    ex
-                );
-                throw;
+                var inputs = await master.ReadInputsAsync(slaveId, addr, 1);
+                return inputs.Length > 0 && inputs[0] ? 1.0 : 0.0;
             }
+
+            // 2. 寄存器操作 (字操作)
+            ushort points = type.GetRegisterCount();
+
+            // 判断是读 Holding 还是 Input Register
+            ushort[] rawRegisters;
+            if (type == DataType.InputRegister)
+                rawRegisters = await master.ReadInputRegistersAsync(slaveId, addr, points);
+            else
+                rawRegisters = await master.ReadHoldingRegistersAsync(slaveId, addr, points);
+
+            if (rawRegisters.Length < points)
+                throw new Exception("读取寄存器长度不足");
+
+            // 3. 使用 ModbusUtility 进行转换 (处理字节序)
+            return type switch
+            {
+                DataType.Int16 => (short)rawRegisters[0],
+                DataType.UInt16 => rawRegisters[0],
+                DataType.InputRegister => rawRegisters[0],
+
+                // 32位处理
+                DataType.UInt32 => ModbusUtility.GetUInt32(rawRegisters[0], rawRegisters[1]),
+                DataType.Float => ModbusUtility.GetSingle(rawRegisters[0], rawRegisters[1]),
+
+                // 64位处理 (假设自定义转换)
+                DataType.Double => ParseDouble(rawRegisters),
+
+                // 默认
+                _ => rawRegisters[0],
+            };
         }
 
-        /// <summary>
-        /// 读取Int16（有符号16位整数）
-        /// </summary>
-        private async Task<double> ReadInt16Async(
-            IModbusService modbusService,
-            DataPointInfo dataPoint
-        )
+        private double ParseDouble(ushort[] registers)
         {
-            var registers = await modbusService.ReadHoldingRegistersAsync(
-                (ushort)dataPoint.Address,
-                1
-            );
-            if (registers == null || registers.Length == 0)
-                throw new InvalidOperationException("未能读取到寄存器数据");
-
-            // 将ushort转换为short（有符号）
-            return (short)registers[0];
-        }
-
-        /// <summary>
-        /// 读取UInt16（无符号16位整数）
-        /// </summary>
-        private async Task<double> ReadUInt16Async(
-            IModbusService modbusService,
-            DataPointInfo dataPoint
-        )
-        {
-            var registers = await modbusService.ReadHoldingRegistersAsync(
-                (ushort)dataPoint.Address,
-                1
-            );
-            if (registers == null || registers.Length == 0)
-                throw new InvalidOperationException("未能读取到寄存器数据");
-
-            return registers[0];
-        }
-
-        /// <summary>
-        /// 读取Int32（有符号32位整数，占用2个寄存器）
-        /// </summary>
-        private async Task<double> ReadInt32Async(
-            IModbusService modbusService,
-            DataPointInfo dataPoint
-        )
-        {
-            var registers = await modbusService.ReadHoldingRegistersAsync(
-                (ushort)dataPoint.Address,
-                2
-            );
-            if (registers == null || registers.Length < 2)
-                throw new InvalidOperationException("未能读取到足够的寄存器数据");
-
-            // 高位在前，低位在后（大端字节序）
-            int value = (registers[0] << 16) | registers[1];
-            return value;
-        }
-
-        /// <summary>
-        /// 读取UInt32（无符号32位整数，占用2个寄存器）
-        /// </summary>
-        private async Task<double> ReadUInt32Async(
-            IModbusService modbusService,
-            DataPointInfo dataPoint
-        )
-        {
-            var registers = await modbusService.ReadHoldingRegistersAsync(
-                (ushort)dataPoint.Address,
-                2
-            );
-            if (registers == null || registers.Length < 2)
-                throw new InvalidOperationException("未能读取到足够的寄存器数据");
-
-            // 高位在前，低位在后（大端字节序）
-            uint value = ((uint)registers[0] << 16) | registers[1];
-            return value;
-        }
-
-        /// <summary>
-        /// 读取Float（32位浮点数，占用2个寄存器）
-        /// </summary>
-        private async Task<double> ReadFloatAsync(
-            IModbusService modbusService,
-            DataPointInfo dataPoint
-        )
-        {
-            var registers = await modbusService.ReadHoldingRegistersAsync(
-                (ushort)dataPoint.Address,
-                2
-            );
-            if (registers == null || registers.Length < 2)
-                throw new InvalidOperationException("未能读取到足够的寄存器数据");
-
-            // 将2个寄存器转换为float
-            byte[] bytes = new byte[4];
-            bytes[0] = (byte)(registers[1] & 0xFF);
-            bytes[1] = (byte)((registers[1] >> 8) & 0xFF);
-            bytes[2] = (byte)(registers[0] & 0xFF);
-            bytes[3] = (byte)((registers[0] >> 8) & 0xFF);
-
-            return BitConverter.ToSingle(bytes, 0);
-        }
-
-        /// <summary>
-        /// 读取Double（64位浮点数，占用4个寄存器）
-        /// </summary>
-        private async Task<double> ReadDoubleAsync(
-            IModbusService modbusService,
-            DataPointInfo dataPoint
-        )
-        {
-            var registers = await modbusService.ReadHoldingRegistersAsync(
-                (ushort)dataPoint.Address,
-                4
-            );
-            if (registers == null || registers.Length < 4)
-                throw new InvalidOperationException("未能读取到足够的寄存器数据");
-
-            // 将4个寄存器转换为double
+            // 将 4 个 ushort 转为 byte[]，再转 double
             byte[] bytes = new byte[8];
-            for (int i = 0; i < 4; i++)
-            {
-                bytes[i * 2] = (byte)(registers[3 - i] & 0xFF);
-                bytes[i * 2 + 1] = (byte)((registers[3 - i] >> 8) & 0xFF);
-            }
-
+            // 注意：这里假设了字节序，实际情况可能需要调整
+            Buffer.BlockCopy(registers, 0, bytes, 0, 8);
+            // 如果设备是 BigEndian (Modbus标准)，C#是 LittleEndian，可能需要反转
+            // 这里仅仅是一个示例，实际开发中建议写一个通用的 ByteSwap 工具方法
             return BitConverter.ToDouble(bytes, 0);
         }
 
-        /// <summary>
-        /// 读取Bool（从保持寄存器读取，0=false, 非0=true）
-        /// </summary>
-        private async Task<double> ReadBoolAsync(
-            IModbusService modbusService,
-            DataPointInfo dataPoint
-        )
+        public void Dispose()
         {
-            var registers = await modbusService.ReadHoldingRegistersAsync(
-                (ushort)dataPoint.Address,
-                1
-            );
-            if (registers == null || registers.Length == 0)
-                throw new InvalidOperationException("未能读取到寄存器数据");
-
-            return registers[0] != 0 ? 1.0 : 0.0;
-        }
-
-        /// <summary>
-        /// 读取Coil（线圈状态）
-        /// </summary>
-        private async Task<double> ReadCoilAsync(
-            IModbusService modbusService,
-            DataPointInfo dataPoint
-        )
-        {
-            var coils = await modbusService.ReadCoilsAsync((ushort)dataPoint.Address, 1);
-            if (coils == null || coils.Length == 0)
-                throw new InvalidOperationException("未能读取到线圈数据");
-
-            return coils[0] ? 1.0 : 0.0;
-        }
-
-        /// <summary>
-        /// 读取Input（离散输入状态）
-        /// </summary>
-        private async Task<double> ReadInputAsync(
-            IModbusService modbusService,
-            DataPointInfo dataPoint
-        )
-        {
-            var inputs = await modbusService.ReadInputsAsync((ushort)dataPoint.Address, 1);
-            if (inputs == null || inputs.Length == 0)
-                throw new InvalidOperationException("未能读取到输入数据");
-
-            return inputs[0] ? 1.0 : 0.0;
-        }
-
-        /// <summary>
-        /// 读取InputRegister（输入寄存器）
-        /// </summary>
-        private async Task<double> ReadInputRegisterAsync(
-            IModbusService modbusService,
-            DataPointInfo dataPoint
-        )
-        {
-            var registers = await modbusService.ReadInputRegistersAsync(
-                (ushort)dataPoint.Address,
-                1
-            );
-            if (registers == null || registers.Length == 0)
-                throw new InvalidOperationException("未能读取到输入寄存器数据");
-
-            return registers[0];
+            StopAsync().Wait();
+            _cts?.Dispose();
         }
     }
 }

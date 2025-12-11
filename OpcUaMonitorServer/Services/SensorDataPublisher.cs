@@ -37,7 +37,9 @@ namespace OpcUaMonitorServer.Services
             try
             {
                 await _messagePublisher.PublishOpcDataAsync<OpcDataMessage>(data);
-                _logger.LogDebug($"发布传感器数据: {data.Name}: {data.DataType} = {data.Value}");
+                _logger.LogDebug(
+                    $"发布传感器数据: {data.Name}: {data.DataPointCode} = {data.Value}"
+                );
             }
             catch (Exception ex)
             {
