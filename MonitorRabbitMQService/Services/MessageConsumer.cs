@@ -6,6 +6,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MonitorLibrary.Reactive;
 using MonitorRabbitMQService.Configuration;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
@@ -21,7 +22,7 @@ namespace MonitorRabbitMQService.Services
         /// <summary>
         /// 订阅队列消息
         /// </summary>
-        void Subscribe<T>(
+        Task Subscribe<T>(
             string queueName,
             Func<T, Task> onMessageReceived,
             string exchange = "",
@@ -31,22 +32,22 @@ namespace MonitorRabbitMQService.Services
         /// <summary>
         /// 订阅实时数据消息
         /// </summary>
-        void SubscribeRealtimeData<T>(Func<T, Task> onMessageReceived);
+        Task SubscribeRealtimeData<T>(Func<T, Task> onMessageReceived);
 
         /// <summary>
         /// 订阅告警消息
         /// </summary>
-        void SubscribeAlarm<T>(Func<T, Task> onMessageReceived);
+        Task SubscribeAlarm<T>(Func<T, Task> onMessageReceived);
 
         /// <summary>
         /// 订阅设备状态消息
         /// </summary>
-        void SubscribeDeviceStatus<T>(Func<T, Task> onMessageReceived);
+        Task SubscribeDeviceStatus<T>(Func<T, Task> onMessageReceived);
 
         /// <summary>
         /// 订阅OPC数据消息
         /// </summary>
-        void SubscribeOpcData<T>(Func<T, Task> onMessageReceived);
+        Task SubscribeOpcData<T>(Func<T, Task> onMessageReceived);
 
         /// <summary>
         /// 停止消费
@@ -60,7 +61,7 @@ namespace MonitorRabbitMQService.Services
     public class MessageConsumer : IMessageConsumer, IDisposable
     {
         private readonly IRabbitMQConnectionService _connectionService;
-        private readonly ILogger<MessageConsumer> _logger;
+        private readonly ReactiveLogger _logger;
         private readonly ExchangeConfiguration _exchangeConfig;
         private readonly QueueConfiguration _queueConfig;
         private readonly RoutingKeyConfiguration _routingKeyConfig;
@@ -72,7 +73,7 @@ namespace MonitorRabbitMQService.Services
             IOptions<ExchangeConfiguration> exchangeConfig,
             IOptions<QueueConfiguration> queueConfig,
             IOptions<RoutingKeyConfiguration> routingKeyConfig,
-            ILogger<MessageConsumer> logger
+            ReactiveLogger logger
         )
         {
             _connectionService =
@@ -179,7 +180,7 @@ namespace MonitorRabbitMQService.Services
             _logger.LogInformation("所有队列已声明并绑定");
         }
 
-        public void Subscribe<T>(
+        public Task Subscribe<T>(
             string queueName,
             Func<T, Task> onMessageReceived,
             string exchange = "",
@@ -219,20 +220,10 @@ namespace MonitorRabbitMQService.Services
                         _logger.LogDebug(
                             $"消息处理成功: Queue={queueName}, DeliveryTag={ea.DeliveryTag}"
                         );
-                        var consumerTag = _channel.BasicConsumeAsync(
-                            queue: queueName,
-                            autoAck: false, // 手动确认
-                            consumer: consumer
-                        );
-
-                        _logger.LogInformation(
-                            $"开始消费队列: {queueName}, ConsumerTag={consumerTag}"
-                        );
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(
-                            ex,
                             $"处理消息时出错: Queue={queueName}, RoutingKey={ea.RoutingKey}"
                         );
 
@@ -244,32 +235,40 @@ namespace MonitorRabbitMQService.Services
                         );
                     }
                 };
+                var consumerTag = _channel.BasicConsumeAsync(
+                    queue: queueName,
+                    autoAck: false, // 手动确认
+                    consumer: consumer
+                );
+
+                _logger.LogInformation($"开始消费队列: {queueName}, ConsumerTag={consumerTag}");
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"订阅队列消息时出错: Queue={queueName}");
+                _logger.LogError($"订阅队列消息时出错: Queue={queueName}");
                 throw;
             }
         }
 
-        public void SubscribeAlarm<T>(Func<T, Task> onMessageReceived)
+        public async Task SubscribeAlarm<T>(Func<T, Task> onMessageReceived)
         {
-            Subscribe(_queueConfig.Alarm, onMessageReceived);
+            await Subscribe(_queueConfig.Alarm, onMessageReceived);
         }
 
-        public void SubscribeDeviceStatus<T>(Func<T, Task> onMessageReceived)
+        public async Task SubscribeDeviceStatus<T>(Func<T, Task> onMessageReceived)
         {
-            Subscribe(_queueConfig.DeviceStatus, onMessageReceived);
+            await Subscribe(_queueConfig.DeviceStatus, onMessageReceived);
         }
 
-        public void SubscribeOpcData<T>(Func<T, Task> onMessageReceived)
+        public async Task SubscribeOpcData<T>(Func<T, Task> onMessageReceived)
         {
-            Subscribe(_queueConfig.OpcData, onMessageReceived);
+            await Subscribe(_queueConfig.OpcData, onMessageReceived);
         }
 
-        public void SubscribeRealtimeData<T>(Func<T, Task> onMessageReceived)
+        public async Task SubscribeRealtimeData<T>(Func<T, Task> onMessageReceived)
         {
-            Subscribe(_queueConfig.RealtimeData, onMessageReceived);
+            await Subscribe(_queueConfig.RealtimeData, onMessageReceived);
         }
 
         public void StopConsuming(string consumerTag)
@@ -277,11 +276,11 @@ namespace MonitorRabbitMQService.Services
             try
             {
                 _channel.BasicCancelAsync(consumerTag);
-                _logger.LogInformation("已停止消费: ConsumerTag={ConsumerTag}", consumerTag);
+                _logger.LogInformation($"已停止消费: ConsumerTag={consumerTag}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "停止消费失败: ConsumerTag={ConsumerTag}", consumerTag);
+                _logger.LogError($"停止消费失败: ConsumerTag={consumerTag}");
                 throw;
             }
         }
@@ -299,7 +298,7 @@ namespace MonitorRabbitMQService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "释放消息消费者时出错");
+                _logger.LogError("释放消息消费者时出错", ex);
             }
             finally
             {

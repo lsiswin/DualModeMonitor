@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MonitorLibrary.Reactive;
 using MonitorRabbitMQService.Configuration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -38,7 +39,7 @@ namespace MonitorRabbitMQService.Services
     public class RabbitMQConnectionService : IRabbitMQConnectionService
     {
         private readonly RabbitMQConfiguration _config;
-        private readonly ILogger<RabbitMQConnectionService> _logger;
+        private readonly ReactiveLogger _logger;
         private IConnectionFactory _connectionFactory;
         private IConnection _connection;
         private bool _disposed;
@@ -46,12 +47,11 @@ namespace MonitorRabbitMQService.Services
 
         public RabbitMQConnectionService(
             IOptions<RabbitMQConfiguration> config,
-            ILogger<RabbitMQConnectionService> logger
+            ReactiveLogger logger
         )
         {
             _config = config.Value ?? throw new ArgumentNullException(nameof(config));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
             InitializeConnectionFactory();
         }
 
@@ -75,11 +75,7 @@ namespace MonitorRabbitMQService.Services
                 NetworkRecoveryInterval = TimeSpan.FromSeconds(_config.NetworkRecoveryInterval),
                 ConsumerDispatchConcurrency = 1,
             };
-            _logger.LogInformation(
-                "RabbitMQ连接工厂已初始化: {HostName}:{Port}",
-                _config.HostName,
-                _config.Port
-            );
+            _logger.LogInformation($"RabbitMQ连接工厂已初始化: {_config.HostName}:{_config.Port}");
         }
 
         /// <summary>
@@ -101,13 +97,13 @@ namespace MonitorRabbitMQService.Services
                 _connection.CallbackExceptionAsync += OnCallbackException;
                 _connection.ConnectionBlockedAsync += OnConnectionBlocked;
                 _connection.ConnectionUnblockedAsync += OnConnectionUnblocked;
-                _logger.LogInformation("RabbitMQ连接已建立: {Endpoint}", _connection.Endpoint);
+                _logger.LogInformation($"RabbitMQ连接已建立: {_connection.Endpoint}");
 
                 return _connection;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建RabbitMQ连接失败");
+                _logger.LogError("创建RabbitMQ连接失败", ex);
                 throw;
             }
         }
@@ -130,7 +126,7 @@ namespace MonitorRabbitMQService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建RabbitMQ Channel失败");
+                _logger.LogError("创建RabbitMQ Channel失败", ex);
                 throw;
             }
         }
@@ -160,7 +156,7 @@ namespace MonitorRabbitMQService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "释放RabbitMQ连接时出错");
+                _logger.LogError("释放RabbitMQ连接时出错");
             }
             finally
             {
@@ -176,7 +172,7 @@ namespace MonitorRabbitMQService.Services
         /// <returns></returns>
         private Task OnConnectionShutdown(object sender, ShutdownEventArgs e)
         {
-            _logger.LogWarning("RabbitMQ连接已关闭: {ReplyText}", e.ReplyText);
+            _logger.LogWarning($"RabbitMQ连接已关闭: {e.ReplyText}");
             return Task.CompletedTask;
         }
 
@@ -188,7 +184,7 @@ namespace MonitorRabbitMQService.Services
         /// <returns></returns>
         private Task OnCallbackException(object sender, CallbackExceptionEventArgs e)
         {
-            _logger.LogError(e.Exception, "RabbitMQ回调异常");
+            _logger.LogError($"RabbitMQ回调异常: {e.Exception}");
             return Task.CompletedTask;
         }
 
@@ -200,7 +196,7 @@ namespace MonitorRabbitMQService.Services
         /// <returns></returns>
         private Task OnConnectionBlocked(object sender, ConnectionBlockedEventArgs e)
         {
-            _logger.LogWarning("RabbitMQ连接被阻塞: {Reason}", e.Reason);
+            _logger.LogWarning($"RabbitMQ连接被阻塞: {e.Reason}");
             return Task.CompletedTask;
         }
 

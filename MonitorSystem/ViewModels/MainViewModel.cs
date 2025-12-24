@@ -80,8 +80,23 @@ namespace DualModeMonitorSystem.ViewModels
             if (item == null || string.IsNullOrEmpty(item.ViewName))
                 return;
 
-            // 验证区域名称是否正确（需与视图中prism:RegionManager.RegionName一致）
-            regionManager.RequestNavigate("MainContentRegion", item.ViewName);
+            regionManager.RequestNavigate(
+                "MainContentRegion",
+                item.ViewName,
+                nr =>
+                {
+                    if (nr.Success == false)
+                    {
+                        // 在这里打断点，查看 nr.Error 的详细信息
+                        var error = nr.Exception;
+                        Console.WriteLine($"导航失败原因: {error?.Message}");
+                        if (error?.InnerException != null)
+                        {
+                            Console.WriteLine($"内部异常: {error.InnerException.Message}");
+                        }
+                    }
+                }
+            );
         }
     }
 }
