@@ -11,7 +11,7 @@ namespace DualModeMonitorSystem.Services
     public interface IDeviceService
     {
         Task<ApiResponse<List<HumitureDevices>>> GetAllDevicesAsync();
-        Task<ApiResponse<HumitureDevices>>GetDeviceByIdAsync(int id);
+        Task<ApiResponse<HumitureDevices>> GetDeviceByIdAsync(int id);
         Task<ApiResponse<HumitureDevices>> CreateDeviceAsync(HumitureDevices device);
         Task<ApiResponse<HumitureDevices>> UpdateDeviceAsync(HumitureDevices device);
         Task<ApiResponse<bool>> DeleteDeviceAsync(int id);
@@ -23,5 +23,8 @@ namespace DualModeMonitorSystem.Services
         //删除数据点
         Task<ApiResponse<bool>> DeleteDataPointAsync(int id);
         Task<ApiResponse<DataPoint>> CreateDataPointAsync(DataPoint newDataPoint);
+
+        // 获取设备最新数据点
+        //Task<ApiResponse<DataPoint>> GetLatestDataPointAsync(int deviceId);
     }
 }

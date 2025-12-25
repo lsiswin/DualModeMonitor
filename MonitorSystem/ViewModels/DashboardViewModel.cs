@@ -1,7 +1,14 @@
-﻿using LiveChartsCore;
+﻿using System.Collections.ObjectModel;
+using DualModeMonitorSystem.Services;
+using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
+using Microsoft.Extensions.Options;
+using MonitorLibrary.Models.Dto;
+using MonitorRabbitMQService.Configuration;
+using MonitorRabbitMQService.Models;
+using MonitorRabbitMQService.Services;
 using SkiaSharp;
 
 namespace DualModeMonitorSystem.ViewModels
@@ -11,105 +18,38 @@ namespace DualModeMonitorSystem.ViewModels
     /// </summary>
     public class DashboardViewModel : ViewModelBase, INavigationAware
     {
-        public static DateTime[] Dates  = new DateTime[]
+        private readonly IDeviceService deviceService;
+        private readonly IRabbitMQConnectionService connectionService;
+        private readonly QueueConfiguration _queueConfig;
+        private readonly IMessageConsumer _messageConsumer;
+
+        public ObservableCollection<DeviceInfoDto> Devices { get; set; }
+
+        private DeviceInfoDto _selectedDevice;
+        private bool _isSubscribed;
+
+        public DeviceInfoDto SelectedDevice
         {
-            new DateTime(2025, 11, 24,11,12,1),
-            new DateTime(2025, 11, 24,11,13,2),
-            new DateTime(2025, 11, 24,11,14,3),
-            new DateTime(2025, 11, 24,11,15,4),
-            new DateTime(2025, 11, 24,11,16,5)
-        };
-
-        public ISeries[] Series { get; set; }
-            
-
-        public Axis[] XAxes { get; set; }
-            = new Axis[]
+            get { return _selectedDevice; }
+            set
             {
-               new Axis
-                {
-                    Name = "日期",
-                    Labeler = value => new DateTime((long)value).ToString("hh:mm"), // 日期格式化
-                    TextSize = 12,
-                    // 时间轴配置
-                    UnitWidth = TimeSpan.FromSeconds(1).Ticks, // 每个数据点代表1天
-                    // 刻度线样式
-                    LabelsPaint = new SolidColorPaint(SKColors.White),
-                }
-            };
-        public Axis[] YAxes { get; set; } = new Axis[]
-        {
-            new Axis
-            {
-                Name = "Temperature",
-                Labeler = value => $"{value} °C",
-                DrawTicksPath = true,
-                SubticksPaint = new SolidColorPaint(SKColors.Blue)
-                {
-                    StrokeThickness = 1
-                },
-                TicksPaint = new SolidColorPaint(SKColors.Red)
-                {
-                    StrokeThickness = 1
-                },
-                TicksAtCenter = true,
-                LabelsPaint = new SolidColorPaint(SKColors.White),
-                SeparatorsPaint = new SolidColorPaint(SKColors.Gray.WithAlpha(100)),
-                Position = LiveChartsCore.Measure.AxisPosition.Start
-
-            },
-            new Axis
-            {
-                Name = "shidu",
-                Position = LiveChartsCore.Measure.AxisPosition.End,
-                ShowSeparatorLines = false,
-                LabelsPaint = new SolidColorPaint(SKColors.White),
-                SeparatorsPaint = new SolidColorPaint(SKColors.Gray.WithAlpha(100)),
-                SubticksPaint = new SolidColorPaint(SKColors.Blue)
-                {
-                    StrokeThickness = 1
-                },
-                TicksPaint = new SolidColorPaint(SKColors.Red)
-                {
-                    StrokeThickness = 1
-                },
-                Labeler = value => $"{value}%",
-
+                _selectedDevice = value;
+                RaisePropertyChanged();
             }
-        };
-
-        public DashboardViewModel()
-        {
-            this.Series = new ISeries[]
-            {
-                new LineSeries<DateTimePoint>
-                {
-                    Name = "cold",
-                    Values = GetDateTimePoints(Dates, new double[] { 32,31, 33, 35, 33 }),
-                    Fill = null,
-                    ScalesYAt = 0,
-                    Stroke = new SolidColorPaint(SKColors.Blue, 3),
-                    GeometrySize = 8,
-                    GeometryStroke = new SolidColorPaint(SKColors.DarkBlue, 2),
-                    GeometryFill = new SolidColorPaint(SKColors.LightBlue)
-                },
-                new LineSeries<DateTimePoint>
-                {
-                    Name = "shidu",
-                    Values = GetDateTimePoints(Dates, new double[] { 35,41, 39, 65, 73, 54, 66 }),
-                    ScalesYAt = 1,
-
-                },
-            };
         }
-        public List<DateTimePoint> GetDateTimePoints(DateTime[] dates, double[] values)
+
+        public DashboardViewModel(
+            IDeviceService deviceService,
+            IRabbitMQConnectionService connectionService,
+            IOptions<QueueConfiguration> queueConfig,
+            IMessageConsumer messageConsumer
+        )
         {
-            var points = new List<DateTimePoint>();
-            for (int i = 0; i < dates.Length; i++)
-            {
-                points.Add(new DateTimePoint(dates[i], values[i]));
-            }
-            return points;
+            this.deviceService = deviceService;
+            _queueConfig =
+                queueConfig?.Value ?? throw new ArgumentNullException(nameof(queueConfig));
+            this.connectionService = connectionService;
+            this._messageConsumer = messageConsumer;
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -119,12 +59,97 @@ namespace DualModeMonitorSystem.ViewModels
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            
+            _messageConsumer.StopConsuming(_queueConfig.OpcData);
+            _isSubscribed = false;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            
+            InitializaAsync();
+        }
+
+        private async Task InitializaAsync()
+        {
+            if (Devices == null)
+                Devices = new ObservableCollection<DeviceInfoDto>();
+            var response = await deviceService.GetAllDevicesAsync();
+            if (response.Success)
+            {
+                SelectedDevice = new DeviceInfoDto();
+                Devices.Clear();
+                foreach (var device in response.Data)
+                {
+                    var temp = device.DataPoints.FirstOrDefault(dp => dp.Code.Contains("Temp"));
+                    var humidity = device.DataPoints.FirstOrDefault(dp => dp.Code.Contains("Hum"));
+
+                    Devices.Add(
+                        new DeviceInfoDto()
+                        {
+                            Name = device.Name,
+                            Temperature = new DataPointDto()
+                            {
+                                Name = temp.Name,
+                                Code = temp.Code,
+                                UpperLimit = temp.UpperLimit,
+                                LowerLimit = temp.LowerLimit,
+                                Value = 0,
+                            },
+                            Humidity = new DataPointDto()
+                            {
+                                Name = humidity.Name,
+                                Code = humidity.Code,
+                                UpperLimit = humidity.UpperLimit,
+                                LowerLimit = humidity.LowerLimit,
+                                Value = 0.00,
+                            },
+                        }
+                    );
+                }
+                if (!_isSubscribed)
+                {
+                    if (_messageConsumer is MessageConsumer consumerImpl)
+                    {
+                        await consumerImpl.InitializeChannelAsync();
+                    }
+
+                    await _messageConsumer.SubscribeOpcData<OpcDataMessage>(
+                        async (message) =>
+                        {
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                UpdateMonitorNodes(message);
+                            });
+                            await Task.CompletedTask;
+                        }
+                    );
+
+                    _isSubscribed = true;
+                }
+                SelectedDevice = Devices.FirstOrDefault();
+            }
+        }
+
+        /// <summary>
+        /// 更新监控节点集合
+        /// </summary>
+        /// <param name="opcDataMessage"></param>
+        private void UpdateMonitorNodes(OpcDataMessage opcMsg)
+        {
+            if (opcMsg == null || string.IsNullOrEmpty(opcMsg.Name))
+                return;
+            var device = Devices.FirstOrDefault(dp => dp.Name == opcMsg.Name);
+            if (device == null)
+            {
+                return;
+            }
+            if (opcMsg.DataPointCode.Equals(device.Temperature.Code))
+            {
+                device.Temperature.Value = opcMsg.Value;
+            }
+            if (opcMsg.DataPointCode.Equals(device.Humidity.Code))
+            {
+                device.Humidity.Value = opcMsg.Value;
+            }
         }
     }
 }

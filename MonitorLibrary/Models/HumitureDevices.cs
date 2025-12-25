@@ -51,7 +51,10 @@ namespace MonitorLibrary.Models
         /// </summary>
         [Required(ErrorMessage = "设备编号不能为空")]
         [MaxLength(20, ErrorMessage = "设备编号不能超过20个字符")]
-        [RegularExpression(@"^[a-zA-Z0-9_-]+$", ErrorMessage = "设备编号只能包含字母、数字、下划线和连字符")]
+        [RegularExpression(
+            @"^[a-zA-Z0-9_-]+$",
+            ErrorMessage = "设备编号只能包含字母、数字、下划线和连字符"
+        )]
         public string DeviceCode
         {
             get => _deviceCode;
@@ -89,7 +92,7 @@ namespace MonitorLibrary.Models
 
         public SerialPortConfig SerialPortConfig { get; set; }
 
-        public ICollection<DataPoint> DataPoints { get; set; } = new List<DataPoint>();
+        public List<DataPoint> DataPoints { get; set; }
 
         #endregion
 
@@ -101,8 +104,8 @@ namespace MonitorLibrary.Models
         }
         #endregion
 
-        
-        
+
+
         /// <summary>
         /// 重写ToString方法，方便调试
         /// </summary>
@@ -110,7 +113,5 @@ namespace MonitorLibrary.Models
         {
             return $"{Name} ({DeviceCode}) - {Status}";
         }
-
-        
     }
 }

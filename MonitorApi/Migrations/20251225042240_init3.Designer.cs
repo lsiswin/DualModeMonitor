@@ -11,8 +11,8 @@ using MonitorApi.Services;
 namespace MonitorApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251126070216_init6")]
-    partial class init6
+    [Migration("20251225042240_init3")]
+    partial class init3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,9 +37,6 @@ namespace MonitorApi.Migrations
                     b.Property<int>("DataPointId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte>("DeviceAddress")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Endianness")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -47,9 +44,6 @@ namespace MonitorApi.Migrations
                     b.Property<string>("FunctionCode")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<int?>("HumitureDevicesId")
-                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("Offset")
                         .HasColumnType("TEXT");
@@ -61,8 +55,6 @@ namespace MonitorApi.Migrations
 
                     b.HasIndex("DataPointId")
                         .IsUnique();
-
-                    b.HasIndex("HumitureDevicesId");
 
                     b.ToTable("ModbusConfigs");
                 });
@@ -213,6 +205,9 @@ namespace MonitorApi.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<byte>("DeviceAddress")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("DeviceId")
                         .HasColumnType("INTEGER");
 
@@ -247,21 +242,17 @@ namespace MonitorApi.Migrations
                         .HasForeignKey("ModbusConfig", "DataPointId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("MonitorLibrary.Models.HumitureDevices", null)
-                        .WithMany("ModbusConfigs")
-                        .HasForeignKey("HumitureDevicesId");
                 });
 
             modelBuilder.Entity("MonitorLibrary.Models.DataPoint", b =>
                 {
-                    b.HasOne("MonitorLibrary.Models.HumitureDevices", "HumitureDevices")
-                        .WithMany()
+                    b.HasOne("MonitorLibrary.Models.HumitureDevices", "HumitureDevice")
+                        .WithMany("DataPoints")
                         .HasForeignKey("DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("HumitureDevices");
+                    b.Navigation("HumitureDevice");
                 });
 
             modelBuilder.Entity("MonitorLibrary.Models.DataPointRecord", b =>
@@ -296,7 +287,7 @@ namespace MonitorApi.Migrations
 
             modelBuilder.Entity("MonitorLibrary.Models.HumitureDevices", b =>
                 {
-                    b.Navigation("ModbusConfigs");
+                    b.Navigation("DataPoints");
                 });
 #pragma warning restore 612, 618
         }

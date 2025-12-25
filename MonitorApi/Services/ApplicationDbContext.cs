@@ -21,10 +21,14 @@ namespace MonitorApi.Services
         public DbSet<ModbusConfig> ModbusConfigs { get; set; }
 
         // 构造函数：接收数据库配置
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options) { }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information); // 将 SQL 打印到控制台
         }
+
         // 应用配置
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,8 +39,6 @@ namespace MonitorApi.Services
             modelBuilder.ApplyConfiguration(new HumitureConfiguration());
             modelBuilder.ApplyConfiguration(new ModbusConfigConfiguration());
             modelBuilder.ApplyConfiguration(new SerialPortConfigConfiguration());
-
-            
         }
     }
 }

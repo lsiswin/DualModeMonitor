@@ -23,6 +23,8 @@ namespace DualModeMonitorSystem.ViewModels
         private readonly IMessageConsumer _messageConsumer;
         private readonly QueueConfiguration _queueConfig;
         private string _displayMode;
+        private bool _isSubscribed;
+
         public string DisplayMode
         {
             get => _displayMode;
@@ -46,33 +48,35 @@ namespace DualModeMonitorSystem.ViewModels
             {
                 DisplayMode = mode;
             });
+            MonitorNodes = new ObservableCollection<SensorMonitorDto>();
         }
 
         public ObservableCollection<SensorMonitorDto> MonitorNodes { get; set; }
 
         public async Task Initialize()
         {
-            MonitorNodes = new ObservableCollection<SensorMonitorDto>();
             try
             {
-                // 1. 初始化信道和声明队列（如果尚未初始化）
-                if (_messageConsumer is MessageConsumer consumerImpl)
+                if (!_isSubscribed)
                 {
-                    await consumerImpl.InitializeChannelAsync();
-                }
-
-                // 2. 订阅 OPC 数据
-                await _messageConsumer.SubscribeOpcData<OpcDataMessage>(
-                    async (message) =>
+                    if (_messageConsumer is MessageConsumer consumerImpl)
                     {
-                        // 注意：MQ 回调通常在后台线程，更新 UI 集合需要回到主线程
-                        App.Current.Dispatcher.Invoke(() =>
-                        {
-                            UpdateMonitorNodes(message);
-                        });
-                        await Task.CompletedTask;
+                        await consumerImpl.InitializeChannelAsync();
                     }
-                );
+
+                    await _messageConsumer.SubscribeOpcData<OpcDataMessage>(
+                        async (message) =>
+                        {
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                UpdateMonitorNodes(message);
+                            });
+                            await Task.CompletedTask;
+                        }
+                    );
+
+                    _isSubscribed = true;
+                }
             }
             catch (Exception ex)
             {
@@ -122,6 +126,8 @@ namespace DualModeMonitorSystem.ViewModels
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
             //_messageConsumer.StopConsuming(_queueConfig.OpcData);
+            MonitorNodes.Clear();
+            _isSubscribed = false;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)

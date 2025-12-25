@@ -23,7 +23,7 @@ namespace MonitorApi.Controllers
         [HttpGet]
         public async Task<ApiResponse<List<HumitureDevices>>> GetDevices()
         {
-            var devices = await deviceService.GetAllAsync("SerialPortConfig");
+            var devices = await deviceService.GetAllAsync("SerialPortConfig,DataPoints");
             return ApiResponse<List<HumitureDevices>>.SuccessResult(devices);
         }
 

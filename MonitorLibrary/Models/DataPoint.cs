@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Prism.Mvvm;
 
@@ -38,7 +39,6 @@ namespace MonitorLibrary.Models
         /// <summary>
         /// 外键：关联的传感器ID
         /// </summary>
-        [ForeignKey("HumitureDevices")]
         public int DeviceId
         {
             get { return _deviceId; }
@@ -153,11 +153,8 @@ namespace MonitorLibrary.Models
             set { SetProperty(ref _alarmDelay, value); }
         }
 
-        // 导航属性
-        /// <summary>
-        /// 关联的传感器
-        /// </summary>
-        public HumitureDevices? HumitureDevices { get; set; }
+        [JsonIgnore]
+        public HumitureDevices HumitureDevice { get; set; }
 
         /// <summary>
         /// 一对一：该数据点的Modbus配置

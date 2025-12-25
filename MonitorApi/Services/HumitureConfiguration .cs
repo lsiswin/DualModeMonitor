@@ -1,12 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using MonitorLibrary.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using MonitorLibrary.Models;
 
 namespace MonitorApi.Services
 {
@@ -24,18 +24,17 @@ namespace MonitorApi.Services
             builder.HasIndex(hd => hd.DeviceCode).IsUnique();
 
             // 状态字段约束
-            builder.Property(hd => hd.Status)
-                   .HasConversion<string>()
-                   .IsRequired();
-
+            builder.Property(hd => hd.Status).HasConversion<string>().IsRequired();
 
             // 关系配置：传感器 -> 数据点（一对多）
-            builder.HasMany<DataPoint>()
-                   .WithOne(dp => dp.HumitureDevices)
-                   .HasForeignKey(dp => dp.DeviceId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            builder
+                .HasMany(hd => hd.DataPoints)
+                .WithOne(dp => dp.HumitureDevice)
+                .HasForeignKey(dp => dp.DeviceId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
+
     /// <summary>
     /// 数据点实体配置
     /// </summary>
@@ -49,20 +48,15 @@ namespace MonitorApi.Services
             // 索引配置
             builder.HasIndex(dp => dp.Code).IsUnique();
 
-            // 关系配置：数据点 -> 传感器（多对一）
-            builder.HasOne(dp => dp.HumitureDevices)
-                   .WithMany(hd => hd.DataPoints)  // 指定反向导航属性
-                   .HasForeignKey(dp => dp.DeviceId)
-                   .OnDelete(DeleteBehavior.Cascade)
-                   .IsRequired();  // 明确指定外键是必需的
-
             // 关系配置：数据点 -> 记录（一对多）
-            builder.HasMany(dp => dp.Records)
-                   .WithOne(dpr => dpr.DataPoint)
-                   .HasForeignKey(dpr => dpr.DataPointId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            builder
+                .HasMany(dp => dp.Records)
+                .WithOne(dpr => dpr.DataPoint)
+                .HasForeignKey(dpr => dpr.DataPointId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
+
     /// <summary>
     /// 数据点记录实体配置
     /// </summary>
@@ -73,11 +67,8 @@ namespace MonitorApi.Services
             // 主键配置
             builder.HasKey(dpr => dpr.Id);
 
-            
-
             // 过滤索引：只索引有效数据
-            builder.HasIndex(dpr => dpr.IsValid)
-                   .HasFilter("[IsValid] = 1");
+            builder.HasIndex(dpr => dpr.IsValid).HasFilter("[IsValid] = 1");
         }
     }
 
@@ -92,26 +83,14 @@ namespace MonitorApi.Services
             builder.HasKey(mc => mc.Id);
 
             // 枚举类型映射（使用字符串存储，便于数据库查看和维护）
-            builder.Property(mc => mc.FunctionCode)
-                   .HasConversion<string>()
-                   .IsRequired();
+            builder.Property(mc => mc.FunctionCode).HasConversion<string>().IsRequired();
 
-            builder.Property(mc => mc.DataFormat)
-                   .HasConversion<string>()
-                   .IsRequired();
+            builder.Property(mc => mc.DataFormat).HasConversion<string>().IsRequired();
 
-            builder.Property(mc => mc.Endianness)
-                   .HasConversion<string>()
-                   .IsRequired(); // 补充必填约束，确保字节序有值
-
+            builder.Property(mc => mc.Endianness).HasConversion<string>().IsRequired(); // 补充必填约束，确保字节序有值
 
             // 数据倍率约束（避免极端值）
-            builder.Property(mc => mc.DataMultiplier)
-                   .IsRequired()
-                   .HasPrecision(10, 4); // 精度：10位有效数字，4位小数
-
-
-            
+            builder.Property(mc => mc.DataMultiplier).IsRequired().HasPrecision(10, 4); // 精度：10位有效数字，4位小数
         }
     }
 
@@ -129,21 +108,16 @@ namespace MonitorApi.Services
             builder.HasIndex(sp => sp.PortName).IsUnique();
 
             // 波特率约束
-            builder.Property(sp => sp.BaudRate)
-                   .HasConversion<string>();
+            builder.Property(sp => sp.BaudRate).HasConversion<string>();
 
             // 数据位约束
-            builder.Property(sp => sp.DataBits)
-                   .HasConversion<string>();
+            builder.Property(sp => sp.DataBits).HasConversion<string>();
 
             // 停止位约束
-            builder.Property(sp => sp.StopBits)
-                   .HasConversion<string>();
+            builder.Property(sp => sp.StopBits).HasConversion<string>();
 
             // 校验位约束
-            builder.Property(sp => sp.Parity)
-                   .HasConversion<string>();
+            builder.Property(sp => sp.Parity).HasConversion<string>();
         }
     }
-
 }

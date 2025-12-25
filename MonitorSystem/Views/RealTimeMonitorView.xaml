@@ -73,12 +73,12 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding Temperature, StringFormat={}{0:F1}}" Foreground="White" FontSize="18" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Temperature,Mode=TwoWay}" Foreground="White" FontSize="18" FontWeight="Bold"/>
                         <TextBlock Text="℃" Foreground="#6B7280" FontSize="10" Margin="4,4,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding Humidity, StringFormat={}{0:F1}}" Foreground="#36CFC9" FontSize="18" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Humidity,Mode=TwoWay}" Foreground="#36CFC9" FontSize="18" FontWeight="Bold"/>
                         <TextBlock Text="%RH" Foreground="#6B7280" FontSize="10" Margin="4,4,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
 

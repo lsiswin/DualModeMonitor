@@ -11,8 +11,8 @@ using MonitorApi.Services;
 namespace MonitorApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251126073559_init7")]
-    partial class init7
+    [Migration("20251225041359_init1")]
+    partial class init1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -35,9 +35,6 @@ namespace MonitorApi.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("DataPointId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("DeviceAddress")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Endianness")
@@ -207,6 +204,9 @@ namespace MonitorApi.Migrations
                     b.Property<string>("DataBits")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<byte>("DeviceAddress")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("DeviceId")
                         .HasColumnType("INTEGER");

@@ -82,9 +82,6 @@ namespace MonitorApi.Migrations
                     b.Property<bool>("EnableAlarm")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("HumitureDevicesId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<decimal>("LowerLimit")
                         .HasColumnType("TEXT");
 
@@ -113,8 +110,6 @@ namespace MonitorApi.Migrations
                         .IsUnique();
 
                     b.HasIndex("DeviceId");
-
-                    b.HasIndex("HumitureDevicesId");
 
                     b.ToTable("DataPoints");
                 });
@@ -248,17 +243,13 @@ namespace MonitorApi.Migrations
 
             modelBuilder.Entity("MonitorLibrary.Models.DataPoint", b =>
                 {
-                    b.HasOne("MonitorLibrary.Models.HumitureDevices", "HumitureDevices")
-                        .WithMany()
+                    b.HasOne("MonitorLibrary.Models.HumitureDevices", "HumitureDevice")
+                        .WithMany("DataPoints")
                         .HasForeignKey("DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MonitorLibrary.Models.HumitureDevices", null)
-                        .WithMany("DataPoints")
-                        .HasForeignKey("HumitureDevicesId");
-
-                    b.Navigation("HumitureDevices");
+                    b.Navigation("HumitureDevice");
                 });
 
             modelBuilder.Entity("MonitorLibrary.Models.DataPointRecord", b =>
