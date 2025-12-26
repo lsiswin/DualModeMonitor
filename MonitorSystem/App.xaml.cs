@@ -13,6 +13,7 @@ using MonitorLibrary.Reactive;
 using MonitorRabbitMQService.Configuration;
 using MonitorRabbitMQService.Services;
 using MonitorSystem.Configuration;
+using MonitorSystem.Services;
 using Prism.Ioc;
 
 namespace DualModeMonitorSystem
@@ -79,7 +80,7 @@ namespace DualModeMonitorSystem
             container.RegisterDialog<MessageDialog, MessageDialogViewModel>("MessageDialog");
             container.RegisterDialog<AddDeviceDialog, AddDeviceDialogViewModel>("AddDeviceDialog");
             container.RegisterDialog<ConfirmDialog, ConfirmDialogViewModel>("ConfirmDialog");
-
+            container.RegisterSingleton<IDeviceDataService, OpcDataService>();
             container.RegisterScoped<IRabbitMQConnectionService, RabbitMQConnectionService>();
             // 注册消息消费者为单例
             container.RegisterSingleton<IMessageConsumer, MessageConsumer>();

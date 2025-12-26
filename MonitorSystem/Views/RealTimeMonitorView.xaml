@@ -6,7 +6,10 @@
     xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="800" d:DesignWidth="1200" mc:Ignorable="d">
+    d:DesignHeight="800" d:DesignWidth="1200" mc:Ignorable="d"
+    xmlns:vm="clr-namespace:DualModeMonitorSystem.ViewModels"
+    d:DataContext="{d:DesignInstance vm:RealTimeMonitorViewModel,
+                                 IsDesignTimeCreatable=True}">
 
     <UserControl.Resources>
         <DropShadowEffect x:Key="StandardShadow" BlurRadius="10" Opacity="0.3" ShadowDepth="1" Color="Black"/>
@@ -24,7 +27,7 @@
                     </Grid.RowDefinitions>
 
                     <Border Padding="15,10" Background="#313A4A" CornerRadius="12,12,0,0">
-                        <TextBlock Text="{Binding DeviceName}" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                        <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold" FontSize="13"/>
                     </Border>
 
                     <Grid Grid.Row="1">
@@ -36,14 +39,14 @@
 
                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                             <TextBlock Text="温度" FontSize="10" Foreground="#9CA3AF" HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                            <TextBlock Text="{Binding Temperature, StringFormat={}{0:F1}}" FontSize="32" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding Temperature.Value, StringFormat={}{0:F1}℃}" FontSize="32" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                         </StackPanel>
 
                         <Separator Grid.Column="1" Height="40" Background="#374151" VerticalAlignment="Center"/>
 
                         <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <TextBlock Text="湿度" FontSize="10" Foreground="#9CA3AF" HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                            <TextBlock Text="{Binding Humidity, StringFormat={}{0:F1}}" FontSize="32" FontWeight="Bold" Foreground="#36CFC9" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding Humidity.Value, StringFormat={}{0:F1}%}" FontSize="32" FontWeight="Bold" Foreground="#36CFC9" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
 
@@ -69,17 +72,17 @@
 
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <materialDesign:PackIcon Kind="ExpansionCardVariant" Foreground="#165DFF"/>
-                        <TextBlock Text="{Binding DeviceName}" Foreground="White" FontWeight="SemiBold" Margin="12,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="SemiBold" Margin="12,0" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding Temperature,Mode=TwoWay}" Foreground="White" FontSize="18" FontWeight="Bold"/>
-                        <TextBlock Text="℃" Foreground="#6B7280" FontSize="10" Margin="4,4,0,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Temperature.Value,Mode=TwoWay, StringFormat={}{0:F1}℃}" Foreground="White" FontSize="18" FontWeight="Bold"/>
+
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding Humidity,Mode=TwoWay}" Foreground="#36CFC9" FontSize="18" FontWeight="Bold"/>
-                        <TextBlock Text="%RH" Foreground="#6B7280" FontSize="10" Margin="4,4,0,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Humidity.Value,Mode=TwoWay, StringFormat={}{0:F1}%}" Foreground="#36CFC9" FontSize="18" FontWeight="Bold"/>
+
                     </StackPanel>
 
                     <TextBlock Grid.Column="3" Text="{Binding LastUpdate, StringFormat={}{0:HH:mm:ss}}" 
@@ -109,7 +112,7 @@
         </materialDesign:Card>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding MonitorNodes}">
+            <ItemsControl ItemsSource="{Binding DataService.Devices}">
                 <ItemsControl.Style>
                     <Style TargetType="ItemsControl">
                         <Setter Property="ItemsPanel">

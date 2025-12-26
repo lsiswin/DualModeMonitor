@@ -25,5 +25,7 @@ namespace MonitorLibrary.Models.Dto
             get { return _humidity; }
             set { _humidity = value; }
         }
+
+        public DateTime LastUpdate { get; set; }
     }
 }

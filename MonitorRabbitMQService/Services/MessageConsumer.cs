@@ -96,7 +96,13 @@ namespace MonitorRabbitMQService.Services
 
             // 声明所有队列
             DeclareQueues();
-
+            _channel.ChannelShutdownAsync += (sender, args) =>
+            {
+                _logger.LogWarning(
+                    $"[警告] 信道已关闭！原因: {args.ReplyText}, 引起原因: {args.Initiator}"
+                );
+                return Task.CompletedTask;
+            };
             _logger.LogInformation("消息消费者已初始化");
         }
 

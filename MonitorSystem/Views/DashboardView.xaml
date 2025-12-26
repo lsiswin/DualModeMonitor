@@ -103,11 +103,12 @@
                             Text="设备列表" />
                         <Border Background="#1E222B">
                             <ComboBox
-                                Padding="6"
+                                FontSize="13"
                                 md:HintAssist.Hint="---请选择设备---"
-                                ItemsSource="{Binding Devices}"
+                                ItemsSource="{Binding DataService.Devices}"
                                 SelectedItem="{Binding SelectedDevice}"
                                 DisplayMemberPath ="Name"
+                                Style="{StaticResource MaterialDesignFilledComboBox}"
                                 Foreground="White" />
                         </Border>
                         <StackPanel Margin="0,10">
@@ -281,44 +282,31 @@
                 FontWeight="Bold"
                 Foreground="White"
                 Text="温湿度趋势图" />
-                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                                <Button
-                    Margin="10,0,0,0"
-                    md:ButtonAssist.CornerRadius="15"
-                    Background="#165DFF"
-                    Content="24小时"
-                    Foreground="White"
-                    Style="{DynamicResource MaterialDesignOutlinedDarkButton}" />
-                                <Button
-                    Margin="10,0,0,0"
-                    md:ButtonAssist.CornerRadius="15"
-                    Background="#165DFF"
-                    Content="7天"
-                    Foreground="White"
-                    Style="{DynamicResource MaterialDesignOutlinedDarkButton}" />
-                                <Button
-                    Margin="10,0,0,0"
-                    md:ButtonAssist.CornerRadius="15"
-                    Background="#165DFF"
-                    Content="30天"
-                    Foreground="White"
-                    Style="{DynamicResource MaterialDesignOutlinedDarkButton}" />
-                            </StackPanel>
+                            <TextBlock 
+                                Text="{Binding ChartName}" 
+                                FontSize="16"
+                                VerticalAlignment="Center"
+                                FontWeight="Bold"
+                                FontFamily="Courier New"
+                                Foreground="White"
+                                HorizontalAlignment="Center"
+                                       />
                         </DockPanel>
 
                         <md:Card
-            Height="480"
+            Height="550"
             Margin="10"
             Padding="0"
             Background="#1D2129"
             UniformCornerRadius="4">
                             <lvc:CartesianChart
-                            Margin="10"
-                            Foreground="White"
-                            Background="Transparent"
-                Series="{Binding Series}"
-                XAxes="{Binding XAxes}"
-                YAxes="{Binding YAxes}" />
+                                Margin="10"
+                                Foreground="White"
+                                Background="Transparent"
+                                Series="{Binding Series}"
+                                XAxes="{Binding XAxes}"                                
+                                YAxes="{Binding YAxes}"
+                                TooltipTextPaint="{Binding TooltipTextPaint}"/>
                         </md:Card>
                     </StackPanel>
                 </Border>

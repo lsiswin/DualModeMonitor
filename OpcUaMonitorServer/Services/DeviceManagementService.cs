@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,7 +31,7 @@ namespace OpcUaMonitorServer.Services
         private readonly IHttpService _httpService;
         private readonly ReactiveLogger _logger;
         private List<DeviceInfo> _cachedDevices = new();
-        private Dictionary<int, List<DataPointInfo>> _cachedDataPoints = new();
+        private ConcurrentDictionary<int, List<DataPointInfo>> _cachedDataPoints = new();
 
         public DeviceManagementService(
             IHttpService httpService,
@@ -80,7 +81,7 @@ namespace OpcUaMonitorServer.Services
                             IsEnable = dp.EnableAlarm,
                         })
                         .ToList();
-                    _cachedDataPoints.Add(deviceId, dataPoints);
+                    _cachedDataPoints.TryAdd(deviceId, dataPoints);
                     _logger.LogInformation(
                         $"从API获取到 {dataPoints.Count} 个数据点，设备ID: {deviceId}"
                     );

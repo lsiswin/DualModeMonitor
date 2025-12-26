@@ -25,7 +25,10 @@ namespace MonitorLibrary.Reactive
                 .ObserveOn(Scheduler.CurrentThread) // 确保在主线程处理（如UI）
                 .Subscribe(
                     _ => { }, // 无操作（防止空订阅）
-                    ex => Console.WriteLine($"[ReactiveLogger] Unhandled error: {ex}") // 全局错误处理
+                    ex =>
+                        System.Diagnostics.Debug.WriteLine(
+                            $"[ReactiveLogger] Unhandled error: {ex}"
+                        ) // 全局错误处理
                 );
         }
 
@@ -46,7 +49,7 @@ namespace MonitorLibrary.Reactive
         public void Log(LogLevel level, string message, Exception exception = null)
         {
             _logSubject.OnNext(new LogEvent(level, message, exception));
-            Console.WriteLine($"[{level}] {message}");
+            System.Diagnostics.Debug.WriteLine($"[{level}] {message}");
         }
 
         public void Dispose()
